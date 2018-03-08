@@ -20127,10 +20127,11 @@ void clif_display_pinfo(int fd, struct map_session_data *sd) {
 		struct s_packet_db* info = &packet_db[RFIFOW(fd,0)];
 		int16 len;
 		int i = 0;
-		int tot_baseexp = 100, total_penalty = 100, tot_drop = 100;
+		int tot_baseexp = 100, tot_penalty = 100, tot_drop = 100;
 		int details_bexp[PINFO_MAX];
 		int details_drop[PINFO_MAX];
 		int details_penalty[PINFO_MAX];
+		int penalty_const;
 
 		len = info->len; //this is the base len without details
 		if(!len) return; //version as packet disable
@@ -20269,7 +20270,7 @@ void clif_display_pinfo(int fd, struct map_session_data *sd) {
 			WFIFOL(fd,info->pos[7]+(i*szdetails)) = details_drop[i]*factor;
 			
 			tot_baseexp += details_bexp[i]*factor;
-			total_penalty += details_penalty[i]*factor;
+			tot_penalty += details_penalty[i]*factor;
 			tot_drop += details_drop[i]*factor;
 			len += szdetails;
 		}
