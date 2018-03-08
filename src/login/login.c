@@ -1406,7 +1406,7 @@ int login_fromchar_parse_reqvipdata(int fd, int id, const char *const ip) {
 			acc.group_id = login->config->vip_group_id;
 			acc.char_slots = login->config->chars_per_account + login->config->vip_char_increase;
 			isvip = true;
-		} else { //expired
+		} else if (vip_time) { //expired
 			vip_time = 0;
 			acc.group_id = acc.old_group;
 			acc.old_group = 0;

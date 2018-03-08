@@ -9672,9 +9672,7 @@ ACMD(vip)
 		return -1;
 	}
 
-	pl_sd->vip.time += viptime;
-
-	if (pl_sd->vip.time <= 0) {
+	if (viptime <= 0) {
 		pl_sd->vip.time = 0;
 		pl_sd->vip.enabled = 0;
 		clif->message(pl_sd->fd, msg_fd(fd,703)); // GM has removed your VIP time.
@@ -9682,17 +9680,22 @@ ACMD(vip)
 	} else {
 		int year,month,day,hour,minute,second;
 		char timestr[128];
+		pl_sd->vip.time += viptime;
 		timer->split_time(pl_sd->vip.time*60,&year,&month,&day,&hour,&minute,&second);
-		sprintf(atcmd_output,msg_fd(fd,705),pl_sd->status.name,year,month,day,hour,minute); //%s is VIP for %d years, %d months, %d days, %d hours and %d minutes.
+		sprintf(atcmd_output,msg_fd(fd,705),year,month,day,hour,minute); // Your VIP status is valid for %d years, %d months, %d days, %d hours and %d minutes.
 		clif->message(pl_sd->fd, atcmd_output);
-		sprintf(atcmd_output,msg_fd(fd,706),year,month,day,hour,minute); //This player is now VIP for %d years, %d months, %d days, %d hours and %d minutes.
-		clif->message(fd, atcmd_output);
 		timer->timestamp2string(timestr,20,pl_sd->vip.time,"%Y-%m-%d %H:%M");
-		sprintf(atcmd_output,"%s : %s",msg_fd(fd,707),timestr); //You are VIP until :
+		sprintf(atcmd_output,msg_fd(fd,707),timestr); // You are VIP until :%s
 		clif->message(pl_sd->fd, atcmd_output);
-		clif->message(fd, atcmd_output);
+
+		if (pl_sd != sd) {
+			sprintf(atcmd_output,msg_fd(fd,706),pl_sd->status.name,year,month,day,hour,minute); // Player '%s' is now VIP for %d years, %d months, %d days, %d hours and %d minutes.
+			clif->message(pl_sd->fd,atcmd_output);
+			sprintf(atcmd_output,msg_fd(fd,708),timestr); // The player is now VIP until : %s
+			clif->message(pl_sd->fd,atcmd_output);
+		}
 	}
-	chrif->req_vipActive(pl_sd, viptime, 3);
+	chrif->req_vipActive(pl_sd, viptime, 3); //! FIXME, someone said, player will be kicked out after player get VIP status.
 
 	return 0;
 }
