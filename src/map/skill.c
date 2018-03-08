@@ -15352,11 +15352,11 @@ struct skill_condition skill_get_requirement(struct map_session_data* sd, uint16
 					continue;
 				break;
 			case AB_ADORAMUS:
-				if( itemid_isgemstone(skill->dbs->db[idx].itemid[i]) && skill->check_pc_partner(sd,skill_id,&skill_lv, 1, 2) )
+				if( itemid_isgemstone(skill->dbs->db[idx].itemid[i]) && (sd->special_state.no_gemstone == 2 || skill->check_pc_partner(sd,skill_id,&skill_lv, 1, 2)) )
 					continue;
 				break;
 			case WL_COMET:
-				if( itemid_isgemstone(skill->dbs->db[idx].itemid[i]) && skill->check_pc_partner(sd,skill_id,&skill_lv, 1, 0) )
+				if( itemid_isgemstone(skill->dbs->db[idx].itemid[i]) && (sd->special_state.no_gemstone == 2 || skill->check_pc_partner(sd,skill_id,&skill_lv, 1, 0)) )
 					continue;
 				break;
 			case GN_FIRE_EXPANSION:
@@ -15385,22 +15385,26 @@ struct skill_condition skill_get_requirement(struct map_session_data* sd, uint16
 		req.itemid[i] = skill->dbs->db[idx].itemid[i];
 		req.amount[i] = skill->dbs->db[idx].amount[i];
 
-		if (itemid_isgemstone(req.itemid[i]) && skill_id != HW_GANBANTEIN) {
-			if (sd->special_state.no_gemstone) {
-				// All gem skills except Hocus Pocus and Ganbantein can cast for free with Mistress card [helvetica]
-				if (skill_id != SA_ABRACADABRA)
-					req.itemid[i] = req.amount[i] = 0;
-				else if (--req.amount[i] < 1)
-					req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
-			}
-			if (sc && sc->data[SC_INTOABYSS]) {
-				if (skill_id != SA_ABRACADABRA)
-					req.itemid[i] = req.amount[i] = 0;
-				else if (--req.amount[i] < 1)
-					req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
-			}
-			if (sc && sc->data[SC_MVPCARD_MISTRESS]) {
+		if (itemid_isgemstone(req.itemid[i])) {
+			if (sd->special_state.no_gemstone == 2) { // Remove all Magic Stone required for all skil for VIP.
 				req.itemid[i] = req.amount[i] = 0;
+			} else {
+				if (sd->special_state.no_gemstone) {
+					// All gem skills except Hocus Pocus and Ganbantein can cast for free with Mistress card [helvetica]
+					if (skill_id != SA_ABRACADABRA)
+						req.itemid[i] = req.amount[i] = 0;
+					else if (--req.amount[i] < 1)
+						req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
+				}
+				if (sc && sc->data[SC_INTOABYSS]) {
+					if (skill_id != SA_ABRACADABRA)
+						req.itemid[i] = req.amount[i] = 0;
+					else if (--req.amount[i] < 1)
+						req.amount[i] = 1; // Hocus Pocus always use at least 1 gem
+				}
+				if (sc && sc->data[SC_MVPCARD_MISTRESS]) {
+					req.itemid[i] = req.amount[i] = 0;
+				}
 			}
 		}
 		if (skill_id >= HT_SKIDTRAP && skill_id <= HT_TALKIEBOX && pc->checkskill(sd, RA_RESEARCHTRAP) > 0) {

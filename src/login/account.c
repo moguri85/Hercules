@@ -489,7 +489,11 @@ static bool account_mmo_auth_fromsql(AccountDB_SQL* db, struct mmo_account* acc,
 	sql_handle = db->accounts;
 	// retrieve login entry for the specified account
 	if( SQL_ERROR == SQL->Query(sql_handle,
+#ifdef VIP_ENABLE
+	    "SELECT `account_id`,`userid`,`user_pass`,`sex`,`email`,`group_id`,`state`,`unban_time`,`expiration_time`,`logincount`,`lastlogin`,`last_ip`,`birthdate`,`character_slots`,`pincode`,`pincode_change`,`vip_time`,`old_group` FROM `%s` WHERE `account_id` = %d",
+#else
 	    "SELECT `account_id`,`userid`,`user_pass`,`sex`,`email`,`group_id`,`state`,`unban_time`,`expiration_time`,`logincount`,`lastlogin`,`last_ip`,`birthdate`,`character_slots`,`pincode`,`pincode_change` FROM `%s` WHERE `account_id` = %d",
+#endif
 		db->account_db, account_id )
 	) {
 		Sql_ShowDebug(sql_handle);
@@ -518,6 +522,10 @@ static bool account_mmo_auth_fromsql(AccountDB_SQL* db, struct mmo_account* acc,
 	SQL->GetData(sql_handle, 13, &data, NULL); acc->char_slots = (uint8)atoi(data);
 	SQL->GetData(sql_handle, 14, &data, NULL); safestrncpy(acc->pincode, data, sizeof(acc->pincode));
 	SQL->GetData(sql_handle, 15, &data, NULL); acc->pincode_change = (unsigned int)atol(data);
+#ifdef VIP_ENABLE
+	SQL->GetData(sql_handle, 16, &data, NULL); acc->vip_time = (unsigned int)atol(data);
+	SQL->GetData(sql_handle, 17, &data, NULL); acc->old_group = (unsigned int)atol(data);
+#endif
 
 	SQL->FreeResult(sql_handle);
 
@@ -548,7 +556,11 @@ static bool account_mmo_auth_tosql(AccountDB_SQL* db, const struct mmo_account* 
 	if( is_new )
 	{// insert into account table
 		if( SQL_SUCCESS != SQL->StmtPrepare(stmt,
+#ifdef VIP_ENABLE
+			"INSERT INTO `%s` (`account_id`, `userid`, `user_pass`, `sex`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, `logincount`, `lastlogin`, `last_ip`, `birthdate`, `character_slots`, `pincode`, `pincode_change`, `vip_time`, `old_group`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+#else
 			"INSERT INTO `%s` (`account_id`, `userid`, `user_pass`, `sex`, `email`, `group_id`, `state`, `unban_time`, `expiration_time`, `logincount`, `lastlogin`, `last_ip`, `birthdate`, `character_slots`, `pincode`, `pincode_change`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+#endif
 			db->account_db)
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt,  0, SQLDT_INT,    &acc->account_id,      sizeof acc->account_id)
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt,  1, SQLDT_STRING, acc->userid,           strlen(acc->userid))
@@ -572,13 +584,21 @@ static bool account_mmo_auth_tosql(AccountDB_SQL* db, const struct mmo_account* 
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 13, SQLDT_UINT8,  &acc->char_slots,      sizeof acc->char_slots)
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 14, SQLDT_STRING, &acc->pincode,         strlen(acc->pincode))
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 15, SQLDT_UINT,   &acc->pincode_change,  sizeof acc->pincode_change)
+#ifdef VIP_ENABLE
+		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 16, SQLDT_LONG,   &acc->vip_time,        sizeof acc->vip_time)
+		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 17, SQLDT_INT,    &acc->old_group,       sizeof acc->old_group)
+#endif
 		||  SQL_SUCCESS != SQL->StmtExecute(stmt)
 		) {
 			SqlStmt_ShowDebug(stmt);
 			break;
 		}
 	} else {// update account table
+#ifdef VIP_ENABLE
+		if( SQL_SUCCESS != SQL->StmtPrepare(stmt, "UPDATE `%s` SET `userid`=?,`user_pass`=?,`sex`=?,`email`=?,`group_id`=?,`state`=?,`unban_time`=?,`expiration_time`=?,`logincount`=?,`lastlogin`=?,`last_ip`=?,`birthdate`=?,`character_slots`=?,`pincode`=?,`pincode_change`=?,`vip_time`=?,`old_group`=? WHERE `account_id` = '%d'", db->account_db, acc->account_id)
+#else
 		if( SQL_SUCCESS != SQL->StmtPrepare(stmt, "UPDATE `%s` SET `userid`=?,`user_pass`=?,`sex`=?,`email`=?,`group_id`=?,`state`=?,`unban_time`=?,`expiration_time`=?,`logincount`=?,`lastlogin`=?,`last_ip`=?,`birthdate`=?,`character_slots`=?,`pincode`=?,`pincode_change`=? WHERE `account_id` = '%d'", db->account_db, acc->account_id)
+#endif
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt,  0, SQLDT_STRING, acc->userid,           strlen(acc->userid))
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt,  1, SQLDT_STRING, acc->pass,             strlen(acc->pass))
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt,  2, SQLDT_ENUM,   &acc->sex,             sizeof acc->sex)
@@ -600,6 +620,10 @@ static bool account_mmo_auth_tosql(AccountDB_SQL* db, const struct mmo_account* 
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 12, SQLDT_UINT8,  &acc->char_slots,      sizeof acc->char_slots)
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 13, SQLDT_STRING, &acc->pincode,         strlen(acc->pincode))
 		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 14, SQLDT_UINT,   &acc->pincode_change,  sizeof acc->pincode_change)
+#ifdef VIP_ENABLE
+		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 15, SQLDT_LONG,   &acc->vip_time,        sizeof acc->vip_time)
+		||  SQL_SUCCESS != SQL->StmtBindParam(stmt, 16, SQLDT_INT,    &acc->old_group,       sizeof acc->old_group)
+#endif
 		||  SQL_SUCCESS != SQL->StmtExecute(stmt)
 		) {
 			SqlStmt_ShowDebug(stmt);

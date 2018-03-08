@@ -105,6 +105,14 @@ struct chrif_interface *chrif;
 //2b25: Incoming, chrif_deadopt -> 'Removes baby from Father ID and Mother ID'
 //2b26: Outgoing, chrif_authreq -> 'client authentication request'
 //2b27: Incoming, chrif_authfail -> 'client authentication failed'
+//2b28: FREE
+//2b29: FREE
+//2b2a: FREE
+//2b2b: Incoming, chrif_parse_ack_vipActive -> 'vip info result'
+//2b2c: Outgoing, chrif_req_vipActive -> 'request vip info'
+//2b2d: FREE
+//2b2e: FREE
+//2b2f: FREE
 
 //This define should spare writing the check in every function. [Skotlex]
 #define chrif_check(a) do { if(!chrif->isconnected()) return a; } while(0)
@@ -1458,6 +1466,7 @@ int chrif_parse(int fd) {
 			case 0x2b24: chrif->keepalive_ack(fd); break;
 			case 0x2b25: chrif->deadopt(RFIFOL(fd,2), RFIFOL(fd,6), RFIFOL(fd,10)); break;
 			case 0x2b27: chrif->authfail(fd); break;
+			case 0x2b2b: chrif->parse_ack_vipActive(fd); break;
 			default:
 				ShowError("chrif_parse : unknown packet (session #%d): 0x%x. Disconnecting.\n", fd, (unsigned int)cmd);
 				sockt->eof(fd);
@@ -1619,6 +1628,49 @@ void chrif_del_scdata_single(int account_id, int char_id, short type)
 	WFIFOSET(chrif->fd, 12);
 }
 
+void chrif_parse_ack_vipActive(int fd) {
+#ifdef VIP_ENABLE
+	int aid = RFIFOL(chrif->fd,2);
+	uint32 vip_time = RFIFOL(chrif->fd,6);
+	bool isvip = RFIFOB(chrif->fd,10);
+	uint32 group_id = RFIFOL(chrif->fd,11);
+	TBL_PC *sd = map->id2sd(aid);
+
+	if (sd && isvip) {
+		sd->vip.enabled = 1;
+		sd->vip.time = vip_time;
+		sd->group_id = group_id;
+
+		pc->set_group(sd, group_id);
+
+		// Increase storage size for VIP.
+		sd->storage.size = battle_config.vip_storage_increase + MIN_STORAGE;
+		if (sd->storage.size > MAX_STORAGE) {
+			ShowError("intif_parse_ack_vipActive: Storage size for player %s (%d:%d) is larger than MAX_STORAGE. Storage size has been set to MAX_STORAGE.\n", sd->status.name, sd->status.account_id, sd->status.char_id);
+			sd->storage.size = MAX_STORAGE;
+		}
+		// Magic Stone requirement avoidance for VIP.
+		if (battle_config.vip_gemstone && pc_isvip(sd))
+			sd->special_state.no_gemstone = 2; // need to be done after status_calc_bl(bl,first);
+	}
+#endif
+}
+
+int chrif_req_vipActive(TBL_PC *sd, int8 req_duration, int8 type) {
+#ifdef VIP_ENABLE
+	if (chrif->isconnected() || sd == NULL)
+		return 0;
+
+	WFIFOHEAD(chrif->fd,11);
+	WFIFOW(chrif->fd,0) = 0x2b2c;
+	WFIFOL(chrif->fd,2) = sd->bl.id; // AID
+	WFIFOB(chrif->fd,6) = type; // type&1 - SQL SELECT, type&2 - SQL UPDATE
+	WFIFOL(chrif->fd,7) = req_duration;
+	WFIFOSET(chrif->fd,11);
+#endif
+	return 0;
+}
+
 /**
  * @see DBApply
  */
@@ -1693,6 +1745,7 @@ void chrif_defaults(void) {
 		11, 10, 10,  0, 11,  0,266, 10, // 2b10-2b17: U->2b10, U->2b11, U->2b12, F->2b13, U->2b14, F->2b15, U->2b16, U->2b17
 		 2, 10,  2, -1, -1, -1,  2,  7, // 2b18-2b1f: U->2b18, U->2b19, U->2b1a, U->2b1b, U->2b1c, U->2b1d, U->2b1e, U->2b1f
 		-1, 10,  8,  2,  2, 14, 19, 19, // 2b20-2b27: U->2b20, U->2b21, U->2b22, U->2b23, U->2b24, U->2b25, U->2b26, U->2b27
+		 0,  0,  0, 15, 11,  0,  0,  0, // 2b28-2b2f: F->2b28, F->2b29, F->2b2a, U->2b2b, U->2b2c, F->2b2d, F->2b2e, F->2b2f
 	};
 
 	chrif = &chrif_s;
@@ -1796,4 +1849,7 @@ void chrif_defaults(void) {
 	chrif->parse = chrif_parse;
 	chrif->save_scdata_single = chrif_save_scdata_single;
 	chrif->del_scdata_single = chrif_del_scdata_single;
+
+	chrif->parse_ack_vipActive = chrif_parse_ack_vipActive;
+	chrif->req_vipActive = chrif_req_vipActive;
 }

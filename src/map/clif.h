@@ -565,6 +565,7 @@ enum clif_unittype {
 	CLUT_MERCNARY  = 0x9,
 	CLUT_ELEMENTAL = 0xa,
 };
+
 /**
 * Receive configuration types
 **/
@@ -574,6 +575,15 @@ enum CZ_CONFIG {
 	CZ_CONFIG_PET_AUTOFEEDING        = 2,
 	CZ_CONFIG_HOMUNCULUS_AUTOFEEDING = 3,
 };
+
+enum e_personalinfo {
+	PINFO_BASIC   = 0,
+	PINFO_PREMIUM = 1,
+	PINFO_SERVER  = 2,
+	PINFO_CAFE    = 3,
+	PINFO_MAX     = 4,
+};
+
 /**
  * Structures
  **/
@@ -1413,6 +1423,8 @@ struct clif_interface {
 	void (*clan_leave) (struct map_session_data *sd);
 	void (*clan_message) (struct clan *c, const char *mes, int len);
 	void (*pClanMessage) (int fd, struct map_session_data* sd);
+
+	void (*display_pinfo) (int fd, struct map_session_data *sd);
 };
 
 #ifdef HERCULES_CORE

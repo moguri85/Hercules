@@ -1535,6 +1535,7 @@ int pc_reg_received(struct map_session_data *sd)
 	intif->request_account_storage(sd);
 
 	intif->Mail_requestinbox(sd->status.char_id, 0); // MAIL SYSTEM - Request Mail Inbox
+	chrif->req_vipActive(sd, 0, 1); // Request VIP Information
 	intif->request_questlog(sd);
 	intif->rodex_checkhasnew(sd);
 
@@ -2834,7 +2835,7 @@ int pc_bonus(struct map_session_data *sd,int type,int val) {
 			sd->special_state.no_misc_damage = cap_value(val,0,100);
 			break;
 		case SP_NO_GEMSTONE:
-			if(sd->state.lr_flag != 2)
+			if(sd->state.lr_flag != 2 && sd->special_state.no_gemstone != 2)
 				sd->special_state.no_gemstone = 1;
 			break;
 		case SP_INTRAVISION: // Maya Purple Card effect allowing to see Hiding/Cloaking people [DracoRPG]
@@ -6853,13 +6854,25 @@ void pc_calcexp(struct map_session_data *sd, uint64 *base_exp, uint64 *job_exp, 
 	if (sd->sc.data[SC_CASH_PLUSEXP]) {
 		buff_job_ratio += sd->sc.data[SC_CASH_PLUSEXP]->val1;
 		buff_ratio += sd->sc.data[SC_CASH_PLUSEXP]->val1;
+		if (battle_config.vip_bm_increase && pc_isvip(sd)) {
+			buff_job_ratio += (sd->sc.data[SC_CASH_PLUSEXP]->val1 / battle_config.vip_bm_increase);
+			buff_ratio += (sd->sc.data[SC_CASH_PLUSEXP]->val1 / battle_config.vip_bm_increase);
+		}
 	}
 	if (sd->sc.data[SC_OVERLAPEXPUP]) {
 		buff_job_ratio  += sd->sc.data[SC_OVERLAPEXPUP]->val1;
 		buff_ratio += sd->sc.data[SC_OVERLAPEXPUP]->val1;
+		if (battle_config.vip_bm_increase && pc_isvip(sd)) {
+			buff_job_ratio += (sd->sc.data[SC_OVERLAPEXPUP]->val1 / battle_config.vip_bm_increase);
+			buff_ratio += (sd->sc.data[SC_OVERLAPEXPUP]->val1 / battle_config.vip_bm_increase);
+		}
 	}
-	if (sd->sc.data[SC_CASH_PLUSONLYJOBEXP])
+	if (sd->sc.data[SC_CASH_PLUSONLYJOBEXP]) {
 		buff_job_ratio += sd->sc.data[SC_CASH_PLUSONLYJOBEXP]->val1;
+		if (battle_config.vip_bm_increase && pc_isvip(sd)) {
+			buff_job_ratio += (sd->sc.data[SC_CASH_PLUSONLYJOBEXP]->val1 / battle_config.vip_bm_increase);
+		}
+	}
 
 	//Applying Race and PK modifier First then Premium (Perment modifier) and finally buff modifier
 	jexp += apply_percentrate64(jexp, race_ratio, 100);
@@ -7996,14 +8009,23 @@ int pc_dead(struct map_session_data *sd,struct block_list *src) {
 	   && !map->list[sd->bl.m].flag.noexppenalty && !map_flag_gvg2(sd->bl.m)
 	   && !sd->sc.data[SC_BABY] && !sd->sc.data[SC_CASH_DEATHPENALTY]
 	   ) {
-		if (battle_config.death_penalty_base > 0) {
-			unsigned int base_penalty = 0;
+		unsigned int base_penalty = battle_config.death_penalty_base, job_penalty = battle_config.death_penalty_job;
+#ifdef VIP_ENABLE
+		if(pc_isvip(sd)){
+			base_penalty = base_penalty * battle_config.vip_exp_penalty_base;
+			job_penalty = job_penalty * battle_config.vip_exp_penalty_job;
+		} else {
+			base_penalty = base_penalty * battle_config.vip_exp_penalty_base_normal;
+			job_penalty = job_penalty * battle_config.vip_exp_penalty_job_normal;
+		}
+#endif
+		if (base_penalty > 0) {
 			switch (battle_config.death_penalty_type) {
 				case 1:
-					base_penalty = (unsigned int) apply_percentrate64(pc->nextbaseexp(sd), battle_config.death_penalty_base, 10000);
+					base_penalty = (unsigned int) apply_percentrate64(pc->nextbaseexp(sd), base_penalty, 10000);
 					break;
 				case 2:
-					base_penalty = (unsigned int) apply_percentrate64(sd->status.base_exp, battle_config.death_penalty_base, 10000);
+					base_penalty = (unsigned int) apply_percentrate64(sd->status.base_exp, base_penalty, 10000);
 					break;
 			}
 
@@ -8017,15 +8039,13 @@ int pc_dead(struct map_session_data *sd,struct block_list *src) {
 			}
 		}
 
-		if(battle_config.death_penalty_job > 0) {
-			unsigned int job_penalty = 0;
-
+		if(job_penalty > 0) {
 			switch (battle_config.death_penalty_type) {
 				case 1:
-					job_penalty = (unsigned int) apply_percentrate64(pc->nextjobexp(sd), battle_config.death_penalty_job, 10000);
+					job_penalty = (unsigned int) apply_percentrate64(pc->nextjobexp(sd), job_penalty, 10000);
 					break;
 				case 2:
-					job_penalty = (unsigned int) apply_percentrate64(sd->status.job_exp, battle_config.death_penalty_job, 10000);
+					job_penalty = (unsigned int) apply_percentrate64(sd->status.job_exp, job_penalty, 10000);
 					break;
 			}
 

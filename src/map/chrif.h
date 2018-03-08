@@ -164,6 +164,9 @@ struct chrif_interface {
 	int (*parse) (int fd);
 	void (*save_scdata_single) (int account_id, int char_id, short type, struct status_change_entry *sce);
 	void (*del_scdata_single) (int account_id, int char_id, short type);
+
+	void (*parse_ack_vipActive) (int fd);
+	int (*req_vipActive) (struct map_session_data *sd, int8 req_duration, int8 type);
 };
 
 #ifdef HERCULES_CORE

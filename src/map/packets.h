@@ -1926,7 +1926,7 @@ packet(0x96e,-1,clif->ackmergeitems);
 #if PACKETVER >= 20110627
 // shuffle packets not added
 // new packets
-	packet(0x08cb,-1); // ZC_PERSONAL_INFOMATION
+	packet(0x08cb,10); // ZC_PERSONAL_INFOMATION
 #endif
 
 //2011-07-18aRagexe (Thanks to Yommy!)
@@ -2311,6 +2311,8 @@ packet(0x96e,-1,clif->ackmergeitems);
 
 	// New Packets (wrong version or packet not exists)
 	packet(0x0447,2); // PACKET_CZ_BLOCKING_PLAY_CANCEL
+	//packet(0x097b,16); // ZC_PERSONAL_INFOMATION
+	//packet(0x0981,12); // ZC_PERSONAL_INFOMATION_CHN
 	packet(0x099f,24);
 	// New Packets End
 #endif

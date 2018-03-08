@@ -244,7 +244,7 @@ struct map_session_data {
 		unsigned int no_castcancel : 1;
 		unsigned int no_castcancel2 : 1;
 		unsigned int no_sizefix : 1;
-		unsigned int no_gemstone : 1;
+		unsigned int no_gemstone : 2;
 		unsigned int intravision : 1; // Maya Purple Card effect [DracoRPG]
 		unsigned int perfect_hiding : 1; // [Valaris]
 		unsigned int no_knockback : 1;
@@ -618,6 +618,12 @@ END_ZEROED_BLOCK;
 	const char* delunit_prevfile;
 	int delunit_prevline;
 
+#ifdef VIP_ENABLE
+	struct {
+		unsigned int enabled;
+		unsigned int time;
+	} vip;
+#endif
 };
 
 #define EQP_WEAPON EQP_HAND_R
@@ -653,6 +659,12 @@ END_ZEROED_BLOCK;
 #define pc_iscloaking(sd)     ( !((sd)->sc.option&OPTION_CHASEWALK) && ((sd)->sc.option&OPTION_CLOAK) )
 #define pc_ischasewalk(sd)    ( (sd)->sc.option&OPTION_CHASEWALK )
 #define pc_ismuted(sc,type)   ( (sc)->data[SC_NOCHAT] && (sc)->data[SC_NOCHAT]->val1&(type) )
+
+#ifdef VIP_ENABLE
+	#define pc_isvip(sd)          ( sd->vip.enabled ? 1 : 0 )
+#else
+	#define pc_isvip(sd)          ( 0 )
+#endif
 
 #ifdef NEW_CARTS
 	#define pc_iscarton(sd)       ( (sd)->sc.data[SC_PUSH_CART] )

@@ -44,13 +44,16 @@ struct char_session_data {
 	char email[40]; // e-mail (default: a@a.com) by [Yor]
 	time_t expiration_time; // # of seconds 1/1/1970 (timestamp): Validity limit of the account (0 = unlimited)
 	int group_id; // permission
-	uint8 char_slots;
+	uint8 char_slots; // total number of characters that can be created
+	uint8 chars_vip;
+	uint8 chars_billing;
 	uint32 version;
 	uint8 clienttype;
 	char pincode[4+1];
 	uint32 pincode_seed;
 	uint16 pincode_try;
 	uint32 pincode_change;
+	uint8 isvip;
 	char new_name[NAME_LENGTH];
 	char birthdate[10+1];  // YYYY-MM-DD
 };
@@ -178,6 +181,8 @@ struct char_interface {
 	void (*parse_fromlogin_update_ip) (int fd);
 	void (*parse_fromlogin_accinfo2_failed) (int fd);
 	void (*parse_fromlogin_accinfo2_ok) (int fd);
+	int (*parse_fromlogin_reqvipdata) (int account_id, uint8 type, uint32 add_vip_time);
+	int (*parse_fromlogin_vipack) (int fd);
 	int (*parse_fromlogin) (int fd);
 	int (*request_accreg2) (int account_id, int char_id);
 	void (*global_accreg_to_login_start) (int account_id, int char_id);
@@ -228,6 +233,8 @@ struct char_interface {
 	void (*parse_frommap_request_stats_report) (int fd);
 	void (*parse_frommap_scdata_update) (int fd);
 	void (*parse_frommap_scdata_delete) (int fd);
+	int (*parse_frommap_vipack) (int account_id, uint32 vip_time, uint8 isvip, uint32 group_id);
+	int (*parse_frommap_vipactive) (int fd);
 	int (*parse_frommap) (int fd);
 	int (*search_mapserver) (unsigned short map, uint32 ip, uint16 port);
 	int (*mapif_init) (int fd);

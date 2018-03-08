@@ -131,6 +131,11 @@
 	#define MAX_CHARS 9
 #endif
 #endif
+
+#if (MIN_CHARS + MAX_CHAR_VIP + MAX_CHAR_BILLING) > MAX_CHARS
+	#error "Config of MAX_CHARS is invalid"
+#endif
+
 //Number of slots carded equipment can have. Never set to less than 4 as they are also used to keep the data of forged items/equipment. [Skotlex]
 //Note: The client seems unable to receive data for more than 4 slots due to all related packets having a fixed size.
 #define MAX_SLOTS 4
@@ -503,6 +508,7 @@ struct storage_data {
 	bool save;                     ///< save flag.
 	bool received;                 ///< received flag.
 	int aggregate;                 ///< total item count.
+	int size;                      ///< max items.
 	VECTOR_DECL(struct item) item; ///< item vector.
 };
 

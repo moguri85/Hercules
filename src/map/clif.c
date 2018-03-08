@@ -9741,6 +9741,10 @@ void clif_parse_LoadEndAck(int fd, struct map_session_data *sd) {
 		clif->partyinvitationstate(sd);
 		clif->equpcheckbox(sd);
 #endif
+#ifdef VIP_ENABLE
+		clif->display_pinfo(fd, sd);
+#endif
+
 		if( (battle_config.bg_flee_penalty != 100 || battle_config.gvg_flee_penalty != 100)
 		 && (map_flag_gvg2(sd->state.pmap) || map_flag_gvg2(sd->bl.m)
 		  || map->list[sd->state.pmap].flag.battleground || map->list[sd->bl.m].flag.battleground) )
@@ -20105,6 +20109,112 @@ void clif_skill_scale(struct block_list *bl, int src_id, int x, int y, uint16 sk
 #endif
 }
 
+/**
+ *  08cb <packet len>.W <exp>.W <death>.W <drop>.W <DETAIL_EXP_INFO>7B (ZC_PERSONAL_INFOMATION)
+ * <InfoType>.B <Exp>.W <Death>.W <Drop>.W (DETAIL_EXP_INFO 0x8cb)
+ * 097b <packet len>.W <exp>.L <death>.L <drop>.L <DETAIL_EXP_INFO>13B (ZC_PERSONAL_INFOMATION2)
+ * 0981 <packet len>.W <exp>.W <death>.W <drop>.W <activity rate>.W <DETAIL_EXP_INFO>13B (ZC_PERSONAL_INFOMATION_CHN)
+ * <InfoType>.B <Exp>.L <Death>.L <Drop>.L (DETAIL_EXP_INFO 0x97b|0981)
+ * InfoType: 0 PCRoom, 1 Premium, 2 Server, 3 TPlus
+*/
+void clif_display_pinfo(int fd, struct map_session_data *sd) {
+	if (sd) {
+		struct s_packet_db* info = &packet_db[RFIFOW(fd,0)];
+		int16 len;
+		int i = 0, details_prem_penalty = 0;
+		int tot_baseexp = 0, total_penalty = 0, tot_drop = 0;
+		int details_bexp[PINFO_MAX]= {map->list[sd->bl.m].bexp,battle_config.vip_base_exp_increase,battle_config.base_exp_rate,0 }; //TODO move me ?
+		int details_penalty[PINFO_MAX]= {0,0,battle_config.death_penalty_base,0 };
+		int details_drop[PINFO_MAX]= {0,battle_config.vip_drop_increase,battle_config.item_rate_common,0 };
+
+		len = info->len; //this is the base len without details
+		if(!len) return; //version as packet disable
+
+#if PACKETVER < 20130320
+		const int cmd = 0x08cb;
+		int16 szdetails = 7;
+		int16 maxinfotype = 3;
+		int factor = 1;
+# else
+		const int cmd = 0x097b;
+		int16 szdetails = 13;
+		int16 maxinfotype = PINFO_MAX;
+		int factor = 1000;
+#endif
+
+		// Need to alter penalty data for VIP whether the system is enabled or not.
+		details_prem_penalty = battle_config.death_penalty_base;
+#ifdef VIP_ENABLE
+		details_prem_penalty = battle_config.death_penalty_base * (battle_config.vip_exp_penalty_base_normal - 1);
+		if (pc_isvip(sd)) details_prem_penalty = battle_config.death_penalty_base * (battle_config.vip_exp_penalty_base - 1);
+		details_prem_penalty = max(0,details_prem_penalty);
+#endif
+		details_penalty[PINFO_PREMIUM] = details_prem_penalty;
+		WFIFOHEAD(fd,len+maxinfotype*szdetails);
+		WFIFOW(fd,0) = cmd;
+
+		for (i = 0; i < maxinfotype; i++) {
+			WFIFOB(fd,info->pos[4]+(i*szdetails)) = i; //infotype //0 PCRoom, 1 Premium, 2 Server, 3 TPlus
+			WFIFOW(fd,info->pos[5]+(i*szdetails)) = 0;
+			tot_baseexp += details_bexp[i]*factor;
+			WFIFOW(fd,info->pos[6]+(i*szdetails)) = details_penalty[i]*factor;
+			total_penalty += details_penalty[i]*factor;
+			WFIFOW(fd,info->pos[7]+(i*szdetails)) = details_drop[i]*factor;
+			tot_drop += details_drop[i]*factor;
+			len += szdetails;
+		}
+		WFIFOW(fd,info->pos[0])  = len; //packetlen
+		WFIFOW(fd,info->pos[1])  = tot_baseexp;
+		WFIFOW(fd,info->pos[2])  = total_penalty; //6 8
+		WFIFOW(fd,info->pos[3])  = tot_drop; //8 12
+		WFIFOSET(fd,len);
+	}
+}
+
+void clif_display_pinfo_chn(int fd, struct map_session_data *sd) {
+	if (sd) {
+		struct s_packet_db* info = &packet_db[RFIFOW(fd,0)];
+		int16 len, szdetails = 13, maxinfotype = PINFO_MAX;
+		int cmd = 0x0981, i = 0, details_prem_penalty = 0;
+		int tot_baseexp = 0, total_penalty = 0, tot_drop = 0, factor = 1000;
+		int details_bexp[PINFO_MAX]= {map->list[sd->bl.m].bexp,battle_config.vip_base_exp_increase,battle_config.base_exp_rate,0 }; //TODO move me ?
+		int details_penalty[PINFO_MAX]= {0,0,battle_config.death_penalty_base,0 };
+		int details_drop[PINFO_MAX]= {0,battle_config.vip_drop_increase,battle_config.item_rate_common,0 };
+
+		len = info->len; //this is the base len without details
+		if(!len) return; //version as packet disable
+
+		// Need to alter penalty data for VIP whether the system is enabled or not.
+		details_prem_penalty = battle_config.death_penalty_base;
+#ifdef VIP_ENABLE
+		details_prem_penalty = battle_config.death_penalty_base * (battle_config.vip_exp_penalty_base_normal - 1);
+		if (pc_isvip(sd)) details_prem_penalty = battle_config.death_penalty_base * (battle_config.vip_exp_penalty_base - 1);
+		details_prem_penalty = max(0,details_prem_penalty);
+#endif
+		details_penalty[PINFO_PREMIUM] = details_prem_penalty;
+		WFIFOHEAD(fd,len+maxinfotype*szdetails);
+		WFIFOW(fd,0) = cmd;
+
+		for (i = 0; i < maxinfotype; i++) {
+			WFIFOB(fd,info->pos[4]+(i*szdetails)) = i; //infotype //0 PCRoom, 1 Premium, 2 Server, 3 TPlus
+			WFIFOW(fd,info->pos[5]+(i*szdetails)) = 0;
+			tot_baseexp += details_bexp[i]*factor;
+			WFIFOW(fd,info->pos[6]+(i*szdetails)) = details_penalty[i]*factor;
+			total_penalty += details_penalty[i]*factor;
+			WFIFOW(fd,info->pos[7]+(i*szdetails)) = details_drop[i]*factor;
+			tot_drop += details_drop[i]*factor;
+			len += szdetails;
+		}
+		WFIFOW(fd,info->pos[0])  = len; //packetlen
+		WFIFOW(fd,info->pos[1])  = tot_baseexp;
+		WFIFOW(fd,info->pos[2])  = total_penalty; //6 8
+		WFIFOW(fd,info->pos[3])  = tot_drop; //8 12
+
+		WFIFOW(fd,info->pos[8])  = 0; //activity rate case of event ??
+		WFIFOSET(fd,len);
+	}
+}
+
 /*==========================================
  * Main client packet processing function
  *------------------------------------------*/
@@ -21195,4 +21305,6 @@ void clif_defaults(void) {
 	clif->clan_leave = clif_clan_leave;
 	clif->clan_message = clif_clan_message;
 	clif->pClanMessage = clif_parse_ClanMessage;
+
+	clif->display_pinfo = clif_display_pinfo;
 }

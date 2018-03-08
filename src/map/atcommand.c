@@ -7377,20 +7377,27 @@ ACMD(mutearea) {
 ACMD(rates)
 {
 	char buf[CHAT_SIZE_MAX];
+	int vip_base_exp_rate = 0, vip_job_exp_rate = 0, vip_item_rate = 0;
 
 	memset(buf, '\0', sizeof(buf));
 
+	// Display EXP and item rate increase for VIP.
+	if (pc_isvip(sd) && (battle_config.vip_base_exp_increase || battle_config.vip_job_exp_increase || battle_config.vip_drop_increase)) {
+		vip_base_exp_rate = battle_config.vip_base_exp_increase;
+		vip_job_exp_rate = battle_config.vip_job_exp_increase;
+		vip_item_rate = battle_config.vip_drop_increase;
+	}
 	safesnprintf(buf, CHAT_SIZE_MAX, msg_fd(fd,1298), // Experience rates: Base %.2fx / Job %.2fx
-			 battle_config.base_exp_rate/100., battle_config.job_exp_rate/100.);
+			 (battle_config.base_exp_rate+vip_base_exp_rate)/100., (battle_config.job_exp_rate+vip_job_exp_rate)/100.);
 	clif->message(fd, buf);
 	safesnprintf(buf, CHAT_SIZE_MAX, msg_fd(fd,1299), // Normal Drop Rates: Common %.2fx / Healing %.2fx / Usable %.2fx / Equipment %.2fx / Card %.2fx
-			 battle_config.item_rate_common/100., battle_config.item_rate_heal/100., battle_config.item_rate_use/100., battle_config.item_rate_equip/100., battle_config.item_rate_card/100.);
+			 (battle_config.item_rate_common+vip_item_rate)/100., (battle_config.item_rate_heal+vip_item_rate)/100., (battle_config.item_rate_use+vip_item_rate)/100., (battle_config.item_rate_equip+vip_item_rate)/100., (battle_config.item_rate_card+vip_item_rate)/100.);
 	clif->message(fd, buf);
 	safesnprintf(buf, CHAT_SIZE_MAX, msg_fd(fd,1300), // Boss Drop Rates: Common %.2fx / Healing %.2fx / Usable %.2fx / Equipment %.2fx / Card %.2fx
-			 battle_config.item_rate_common_boss/100., battle_config.item_rate_heal_boss/100., battle_config.item_rate_use_boss/100., battle_config.item_rate_equip_boss/100., battle_config.item_rate_card_boss/100.);
+			 (battle_config.item_rate_common_boss+vip_item_rate)/100., (battle_config.item_rate_heal_boss+vip_item_rate)/100., (battle_config.item_rate_use_boss+vip_item_rate)/100., (battle_config.item_rate_equip_boss+vip_item_rate)/100., (battle_config.item_rate_card_boss+vip_item_rate)/100.);
 	clif->message(fd, buf);
 	safesnprintf(buf, CHAT_SIZE_MAX, msg_fd(fd,1301), // Other Drop Rates: MvP %.2fx / Card-Based %.2fx / Treasure %.2fx
-			 battle_config.item_rate_mvp/100., battle_config.item_rate_adddrop/100., battle_config.item_rate_treasure/100.);
+			 (battle_config.item_rate_mvp+vip_item_rate)/100., (battle_config.item_rate_adddrop+vip_item_rate)/100., (battle_config.item_rate_treasure+vip_item_rate)/100.);
 	clif->message(fd, buf);
 
 	return true;
@@ -9633,6 +9640,65 @@ ACMD(reloadclans)
 	return true;
 }
 
+#ifdef VIP_ENABLE
+ACMD(vip)
+{
+	struct map_session_data *pl_sd = NULL;
+	char * modif_p;
+	int viptime = 0;
+	nullpo_retr(-1, sd);
+
+	if (!*message || sscanf(message, "%255s %23[^\n]",atcmd_output,atcmd_player_name) < 2) {
+		clif->message(fd, msg_fd(fd,700));	//Usage: @vip <time> <character name>
+		return -1;
+	}
+
+	atcmd_output[sizeof(atcmd_output)-1] = '\0';
+
+	modif_p = atcmd_output;
+	viptime = (int)timer->solve_time(modif_p)/60; // Change to minutes
+	if (viptime == 0) {
+		clif->message(fd, msg_fd(fd,701)); // Invalid time for vip command.
+		clif->message(fd, msg_fd(fd,702)); // Time parameter format is +/-<value> to alter. y/a = Year, m = Month, d/j = Day, h = Hour, n/mn = Minute, s = Second.
+		return -1;
+	}
+
+	if ((pl_sd = map->nick2sd(atcmd_player_name)) == NULL) {
+		clif->message(fd, msg_fd(fd,3)); // Character not found.
+		return -1;
+	}
+
+	if (pc_get_group_level(pl_sd) > pc_get_group_level(sd)) {
+		clif->message(fd, msg_fd(fd,81)); // Your GM level don't authorise you to do this action on this player.
+		return -1;
+	}
+
+	pl_sd->vip.time += viptime;
+
+	if (pl_sd->vip.time <= 0) {
+		pl_sd->vip.time = 0;
+		pl_sd->vip.enabled = 0;
+		clif->message(pl_sd->fd, msg_fd(fd,703)); // GM has removed your VIP time.
+		clif->message(fd, msg_fd(fd,704)); // Player is no longer VIP.
+	} else {
+		int year,month,day,hour,minute,second;
+		char timestr[128];
+		timer->split_time(pl_sd->vip.time*60,&year,&month,&day,&hour,&minute,&second);
+		sprintf(atcmd_output,msg_fd(fd,705),pl_sd->status.name,year,month,day,hour,minute); //%s is VIP for %d years, %d months, %d days, %d hours and %d minutes.
+		clif->message(pl_sd->fd, atcmd_output);
+		sprintf(atcmd_output,msg_fd(fd,706),year,month,day,hour,minute); //This player is now VIP for %d years, %d months, %d days, %d hours and %d minutes.
+		clif->message(fd, atcmd_output);
+		timer->timestamp2string(timestr,20,pl_sd->vip.time,"%Y-%m-%d %H:%M");
+		sprintf(atcmd_output,"%s : %s",msg_fd(fd,707),timestr); //You are VIP until :
+		clif->message(pl_sd->fd, atcmd_output);
+		clif->message(fd, atcmd_output);
+	}
+	chrif->req_vipActive(pl_sd, viptime, 3);
+
+	return 0;
+}
+#endif
+
 /**
  * Fills the reference of available commands in atcommand DBMap
  **/
@@ -9911,6 +9977,9 @@ void atcommand_basecommands(void) {
 		ACMD_DEF(joinclan),
 		ACMD_DEF(leaveclan),
 		ACMD_DEF(reloadclans),
+#ifdef VIP_ENABLE
+		ACMD_DEF(vip),
+#endif
 	};
 	int i;
 

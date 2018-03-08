@@ -74,6 +74,11 @@ struct timer_interface {
 
 	unsigned long (*get_uptime) (void);
 
+	//transform a timestamp to string
+	const char* (*timestamp2string) (char* str, size_t size, time_t timestamp, const char* format);
+	void (*split_time) (int time, int* year, int* month, int* day, int* hour, int* minute, int* second);
+	double (*solve_time) (char* modif_p);
+
 	int (*perform) (int64 tick);
 	void (*init) (void);
 	void (*final) (void);

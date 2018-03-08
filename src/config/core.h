@@ -98,6 +98,7 @@
 /**
  * No settings past this point
  **/
+#include "./vip.h"
 #include "./renewal.h"
 #include "./secure.h"
 #include "./classes/general.h"

@@ -2075,11 +2075,11 @@ void char_mmo_char_send_slots_info(int fd, struct char_session_data* sd) {
 	WFIFOHEAD(fd,29);
 	WFIFOW(fd,0) = 0x82d;
 	WFIFOW(fd,2) = 29;
-	WFIFOB(fd,4) = sd->char_slots;
-	WFIFOB(fd,5) = MAX_CHARS - sd->char_slots;
-	WFIFOB(fd,6) = 0;
-	WFIFOB(fd,7) = sd->char_slots;
-	WFIFOB(fd,8) = sd->char_slots;
+	WFIFOB(fd,4) = MAX_CHARS - sd->chars_billing - sd->chars_vip; // Normal Slots
+	WFIFOB(fd,5) = sd->chars_vip; // Premium Slots
+	WFIFOB(fd,6) = sd->chars_billing; // Billing Slots
+	WFIFOB(fd,7) = sd->char_slots; // Producible Slots
+	WFIFOB(fd,8) = sd->char_slots; // Valid Slots
 	memset(WFIFOP(fd,9), 0, 20); // unused bytes
 	WFIFOSET(fd,29);
 }
@@ -2101,8 +2101,8 @@ int char_mmo_char_send_characters(int fd, struct char_session_data* sd)
 	WFIFOW(fd,0) = 0x6b;
 #if PACKETVER >= 20100413
 	WFIFOB(fd,4) = MAX_CHARS; // Max slots.
-	WFIFOB(fd,5) = sd->char_slots; // Available slots. (aka PremiumStartSlot)
-	WFIFOB(fd,6) = MAX_CHARS; // Premium slots. AKA any existent chars past sd->char_slots but within MAX_CHARS will show a 'Premium Service' in red
+	WFIFOB(fd,5) = MAX_CHARS - sd->chars_billing - sd->chars_vip; // Available slots. (aka PremiumStartSlot)
+	WFIFOB(fd,6) = MAX_CHARS - sd->chars_billing; // Premium slots. AKA any existent chars past sd->char_slots but within MAX_CHARS will show a 'Premium Service' in red
 #endif
 	memset(WFIFOP(fd,4 + offset), 0, 20); // unknown bytes
 	j+=chr->mmo_chars_fromsql(sd, WFIFOP(fd,j));
@@ -2341,6 +2341,9 @@ void char_parse_fromlogin_account_data(int fd)
 		safestrncpy(sd->birthdate, RFIFOP(fd,52), sizeof(sd->birthdate));
 		safestrncpy(sd->pincode, RFIFOP(fd,63), sizeof(sd->pincode));
 		sd->pincode_change = RFIFOL(fd,68);
+		sd->isvip = RFIFOB(fd,72);
+		sd->chars_vip = RFIFOB(fd,73);
+		sd->chars_billing = RFIFOB(fd,74);
 		// continued from chr->auth_ok...
 		if( (max_connect_user == 0 && sd->group_id != gm_allow_group) ||
 			( max_connect_user > 0 && chr->count_users() >= max_connect_user && sd->group_id != gm_allow_group ) ) {
@@ -2362,7 +2365,7 @@ void char_parse_fromlogin_account_data(int fd)
 	#endif
 		}
 	}
-	RFIFOSKIP(fd,72);
+	RFIFOSKIP(fd,75);
 }
 
 void char_parse_fromlogin_login_pong(int fd)
@@ -2625,7 +2628,7 @@ int char_parse_fromlogin(int fd) {
 
 			case 0x2717: // account data
 			{
-				if (RFIFOREST(fd) < 72)
+				if (RFIFOREST(fd) < 75)
 					return 0;
 				chr->parse_fromlogin_account_data(fd);
 			}
@@ -2907,6 +2910,72 @@ int char_loadName(int char_id, char* name)
 		safestrncpy(name, unknown_char_name, NAME_LENGTH);
 	}
 	return 0;
+}
+
+/*
+ * ZH 0x2b2c
+ * HA 0x2742
+ * We received a request vip_info from map-server.
+ * Transmit it to login-serv as it's the one knowing the info
+ */
+int char_parse_frommap_vipactive(int fd) {
+#ifdef VIP_ENABLE
+	uint32 aid = RFIFOL(fd,2); //aid
+	uint8 type = RFIFOB(fd,6); //type
+	uint32 adddur = RFIFOL(fd,7); //req_inc_duration
+	RFIFOSKIP(fd,11);
+	chr->parse_fromlogin_reqvipdata(aid, type, adddur);
+#endif
+	return 0;
+}
+
+/*
+ * HZ 0x2b2b
+ * Transmist vip data to mapserv
+ */
+int char_parse_frommap_vipack(int account_id, uint32 vip_time, uint8 isvip, uint32 group_id) {
+#ifdef VIP_ENABLE
+	uint8 buf[16];
+	WBUFW(buf,0) = 0x2b2b;
+	WBUFL(buf,2) = account_id;
+	WBUFL(buf,6) = vip_time;
+	WBUFB(buf,10) = isvip;
+	WBUFL(buf,11) = group_id;
+	mapif->sendall(buf,15);  // inform all map-servers attached.
+#endif
+	return 0;
+}
+
+/*
+ * HZ 0x2b2b
+ * Request vip data from loginserv
+ */
+int char_parse_fromlogin_reqvipdata(int account_id, uint8 type, uint32 add_vip_time) {
+#ifdef VIP_ENABLE
+	WFIFOHEAD(chr->login_fd,11);
+	WFIFOW(chr->login_fd,0) = 0x2742;
+	WFIFOL(chr->login_fd,2) =  account_id;
+	WFIFOB(chr->login_fd,6) = type;
+	WFIFOL(chr->login_fd,7) =  add_vip_time; //req_inc_duration
+	WFIFOSET(chr->login_fd,11);
+#endif
+	return 0;
+}
+
+/*
+ * AH 0x2743
+ * We received the info from login-serv, transmit it to map
+ */
+int char_parse_fromlogin_vipack(int fd) {
+#ifdef VIP_ENABLE
+	uint32 aid = RFIFOL(fd,2); //aid
+	uint32 vip_time = RFIFOL(fd,6); //vip_time
+	uint8 isvip = RFIFOB(fd,10); //isvip
+	uint32 groupid = RFIFOL(fd,11); //new group id
+	RFIFOSKIP(fd,15);
+	chr->parse_frommap_vipack(aid,vip_time,isvip,groupid);
+#endif
+	return 1;
 }
 
 /// Initializes a server structure.
@@ -4042,6 +4111,11 @@ int char_parse_frommap(int fd)
 			}
 			break;
 
+			case 0x2b2c:
+				if (RFIFOREST(fd) < 11) return 0;
+				chr->parse_frommap_vipactive(fd);
+			break;
+
 			case 0x2b23: // map-server alive packet
 				chr->parse_frommap_ping(fd);
 			break;
@@ -4085,6 +4159,11 @@ int char_parse_frommap(int fd)
 					chr->parse_frommap_scdata_delete(fd);
 				}
 				break;
+
+			case 0x2743:
+				if (RFIFOREST(fd) < 15) return 0;
+				chr->parse_fromlogin_vipack(fd);
+			break;
 
 			default:
 			{
@@ -6521,6 +6600,8 @@ void char_defaults(void)
 	chr->parse_fromlogin_accinfo2_failed = char_parse_fromlogin_accinfo2_failed;
 	chr->parse_fromlogin_accinfo2_ok = char_parse_fromlogin_accinfo2_ok;
 	chr->parse_fromlogin = char_parse_fromlogin;
+	chr->parse_fromlogin_reqvipdata = char_parse_fromlogin_reqvipdata;
+	chr->parse_fromlogin_vipack = char_parse_fromlogin_vipack;
 	chr->request_accreg2 = char_request_accreg2;
 	chr->global_accreg_to_login_start = char_global_accreg_to_login_start;
 	chr->global_accreg_to_login_send = char_global_accreg_to_login_send;
@@ -6570,6 +6651,8 @@ void char_defaults(void)
 	chr->parse_frommap_request_stats_report = char_parse_frommap_request_stats_report;
 	chr->parse_frommap_scdata_update = char_parse_frommap_scdata_update;
 	chr->parse_frommap_scdata_delete = char_parse_frommap_scdata_delete;
+	chr->parse_frommap_vipactive = char_parse_frommap_vipactive;
+	chr->parse_frommap_vipack = char_parse_frommap_vipack;
 	chr->parse_frommap = char_parse_frommap;
 	chr->search_mapserver = char_search_mapserver;
 	chr->mapif_init = char_mapif_init;

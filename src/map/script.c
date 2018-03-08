@@ -23964,6 +23964,74 @@ BUILDIN(clan_master)
 	return true;
 }
 
+#ifdef VIP_ENABLE
+/* Returns various information about a player's VIP status.
+ * vip_status <type>,{"<character name>"};
+ * Note: VIP System needs to be enabled.
+ */
+BUILDIN(vip_status) {
+	TBL_PC *sd;
+	char *vip_str = (char *)aMalloc(24*sizeof(char));
+	time_t now = time(NULL);
+	int type = script_getnum(st, 2);
+
+	if (script_hasdata(st, 3))
+		sd = map->nick2sd(script_getstr(st, 3));
+	else
+		sd = script->rid2sd(st);
+
+	if (sd == NULL)
+		return 0;
+
+	switch(type) {
+		case 0: // Get VIP status.
+			script_pushint(st, pc_isvip(sd));
+			break;
+		case 1: // Get VIP expire date.
+			if (pc_isvip(sd)) {
+				time_t viptime = (time_t)sd->vip.time;
+				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime));
+				vip_str[24] = '\0';
+				script_pushstr(st, vip_str);
+			} else
+				script_pushint(st, 0);
+			break;
+		case 2: // Get remaining time.
+			if (pc_isvip(sd)) {
+				time_t viptime = (time_t)sd->vip.time;
+				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime - now));
+				vip_str[24] = '\0';
+				script_pushstr(st, vip_str);
+			} else
+				script_pushint(st, 0);
+			break;
+	}
+	return 0;
+}
+
+/* Adds or removes VIP time in minutes.
+ * vip_time <time>,{"<character name>"};
+ * If time < 0 remove time, else add time.
+ * Note: VIP System needs to be enabled.
+ */
+BUILDIN(vip_time) {
+	TBL_PC *sd;
+	int time = script_getnum(st, 2) * 60; // Convert since it's given in minutes.
+
+	if (script_hasdata(st, 3))
+		sd = map->nick2sd(script_getstr(st, 3));
+	else
+		sd = script->rid2sd(st);
+
+	if (sd == NULL)
+		return 0;
+
+	chrif->req_vipActive(sd, time, 2);
+
+	return 0;
+}
+#endif
+
 /**
  * Adds a built-in script function.
  *
@@ -24672,6 +24740,11 @@ void script_parse_builtin(void) {
 		BUILDIN_DEF(mergeitem,""),
 		BUILDIN_DEF(getcalendartime, "ii??"),
 
+#ifdef VIP_ENABLE
+		BUILDIN_DEF(vip_status, "i?"),
+		BUILDIN_DEF(vip_time, "i?"),
+#endif
+
 		// -- RoDEX
 		BUILDIN_DEF(rodex_sendmail, "isss???????????"),
 		BUILDIN_DEF2(rodex_sendmail, "rodex_sendmail_acc", "isss???????????"),
@@ -24725,6 +24798,7 @@ void script_hardcoded_constants(void)
 	script->set_constant("MAX_BG_MEMBERS",MAX_BG_MEMBERS,false, false);
 	script->set_constant("MAX_CHAT_USERS",MAX_CHAT_USERS,false, false);
 	script->set_constant("MAX_REFINE",MAX_REFINE,false, false);
+	script->set_constant("VIP_SCRIPT",VIP_SCRIPT,false, false);
 
 	script->constdb_comment("status options");
 	script->set_constant("Option_Nothing",OPTION_NOTHING,false, false);

@@ -23,6 +23,7 @@
 
 #include "map/map.h" //ELE_MAX
 #include "common/hercules.h"
+#include "common/mmo.h"
 
 /**
  * Declarations
@@ -501,6 +502,17 @@ struct Battle_Config {
 	int mob_chase_refresh; //How often a monster should refresh its chase [Playtester]
 	int mob_icewall_walk_block; //How a normal monster should be trapped in icewall [Playtester]
 	int boss_icewall_walk_block; //How a boss monster should be trapped in icewall [Playtester]
+
+	int vip_storage_increase;
+	int vip_base_exp_increase;
+	int vip_job_exp_increase;
+	int vip_bm_increase;
+	int vip_drop_increase;
+	int vip_gemstone;
+	int vip_exp_penalty_base_normal;
+	int vip_exp_penalty_base;
+	int vip_exp_penalty_job_normal;
+	int vip_exp_penalty_job;
 
 	/** Hercules **/
 	int skill_trap_type;

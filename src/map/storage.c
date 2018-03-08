@@ -125,7 +125,7 @@ int storage_storageopen(struct map_session_data *sd)
 		clif->storagelist(sd, VECTOR_DATA(sd->storage.item), VECTOR_LENGTH(sd->storage.item));
 	}
 
-	clif->updatestorageamount(sd, sd->storage.aggregate, MAX_STORAGE);
+	clif->updatestorageamount(sd, sd->storage.aggregate, sd->storage.size);
 	return 0;
 }
 
@@ -228,7 +228,7 @@ int storage_additem(struct map_session_data* sd, struct item* item_data, int amo
 
 	clif->storageitemadded(sd, it, i, amount);
 
-	clif->updatestorageamount(sd, sd->storage.aggregate, MAX_STORAGE);
+	clif->updatestorageamount(sd, sd->storage.aggregate, sd->storage.size);
 
 	sd->storage.save = true; // set a save flag.
 
@@ -258,7 +258,7 @@ int storage_delitem(struct map_session_data* sd, int n, int amount)
 
 	if (it->amount == 0) {
 		memset(it, 0, sizeof(struct item));
-		clif->updatestorageamount(sd, --sd->storage.aggregate, MAX_STORAGE);
+		clif->updatestorageamount(sd, --sd->storage.aggregate, sd->storage.size);
 	}
 
 	sd->storage.save = true;

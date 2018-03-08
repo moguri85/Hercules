@@ -51,6 +51,10 @@ struct mmo_account
 	char lastlogin[24];         // date+time of last successful login
 	char last_ip[16];           // save of last IP of connection
 	char birthdate[10+1];       // assigned birth date (format: YYYY-MM-DD, default: 0000-00-00)
+#ifdef VIP_ENABLE
+	int old_group;
+	int vip_time;
+#endif
 };
 
 struct AccountDBIterator

@@ -25,6 +25,7 @@
 #include "common/core.h" // CORE_ST_LAST
 #include "common/db.h"
 #include "common/mmo.h" // NAME_LENGTH,SEX_*
+#include "config/core.h"
 
 /** @file
  * Login interface.
@@ -129,6 +130,12 @@ struct Login_Config {
 	bool client_hash_check;                         ///< flags for checking client md5
 	// TODO: VECTOR candidate
 	struct client_hash_node *client_hash_nodes;     ///< linked list containg md5 hash for each gm group
+
+	int chars_per_account;
+#ifdef VIP_ENABLE
+	unsigned int vip_group_id;
+	unsigned int vip_char_increase;
+#endif
 };
 
 struct login_auth_node {
@@ -213,6 +220,10 @@ struct login_interface {
 	void (*fromchar_parse_change_pincode) (int fd);
 	bool (*fromchar_parse_wrong_pincode) (int fd);
 	void (*fromchar_parse_accinfo) (int fd);
+
+	int (*fromchar_sendvipdata) (int fd, int id, const char *ip, struct mmo_account acc, char isvip);
+	int (*fromchar_parse_reqvipdata) (int fd, int id, const char *ip);
+
 	int (*parse_fromchar) (int fd);
 	void (*kick) (struct login_session_data* sd);
 	void (*auth_ok) (struct login_session_data* sd);
@@ -230,6 +241,7 @@ struct login_interface {
 	bool (*config_read_permission) (const char *filename, struct config_t *config, bool imported);
 	bool (*config_read_permission_hash) (const char *filename, struct config_t *config, bool imported);
 	bool (*config_read_permission_blacklist) (const char *filename, struct config_t *config, bool imported);
+	bool (*config_read_vip) (const char *filename, struct config_t *config, bool imported);
 	bool (*config_read_users) (const char *filename, struct config_t *config, bool imported);
 	void (*clear_dnsbl_servers) (void);
 	void (*config_set_dnsbl_servers) (struct config_setting_t *setting);

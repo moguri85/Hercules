@@ -34,6 +34,7 @@
 #include "common/db.h"
 #include "common/memmgr.h"
 #include "common/md5calc.h"
+#include "common/mmo.h"
 #include "common/nullpo.h"
 #include "common/random.h"
 #include "common/showmsg.h"
@@ -385,14 +386,22 @@ void login_fromchar_account(int fd, int account_id, struct mmo_account *acc)
 		time_t expiration_time = 0;
 		char email[40] = "";
 		int group_id = 0;
-		uint8 char_slots = 0;
 		char birthdate[10+1] = "";
 		char pincode[4+1] = "\0\0\0\0";
+		char isvip = false;
+		uint8 char_slots = MIN_CHARS, char_vip = 0;
 
 		safestrncpy(email, acc->email, sizeof(email));
 		expiration_time = acc->expiration_time;
 		group_id = acc->group_id;
-		char_slots = acc->char_slots;
+#ifdef VIP_ENABLE
+		char_vip = login->config->chars_per_account;
+		if (acc->vip_time > time(NULL) ) {
+			isvip = true;
+			char_slots = acc->char_slots + char_vip;
+		} else
+			char_slots = acc->char_slots;
+#endif
 		safestrncpy(pincode, acc->pincode, sizeof(pincode));
 		safestrncpy(birthdate, acc->birthdate, sizeof(birthdate));
 		if (pincode[0] == '\0')
@@ -405,6 +414,9 @@ void login_fromchar_account(int fd, int account_id, struct mmo_account *acc)
 		safestrncpy(WFIFOP(fd,52), birthdate, 10+1);
 		safestrncpy(WFIFOP(fd,63), pincode, 4+1 );
 		WFIFOL(fd,68) = acc->pincode_change;
+		WFIFOB(fd,72) = isvip;
+		WFIFOB(fd,73) = char_vip;
+		WFIFOB(fd,74) = MAX_CHAR_BILLING; // TODO Create a config for this
 	}
 	else
 	{
@@ -415,8 +427,11 @@ void login_fromchar_account(int fd, int account_id, struct mmo_account *acc)
 		safestrncpy(WFIFOP(fd,52), "", 10+1);
 		safestrncpy(WFIFOP(fd,63), "\0\0\0\0", 4+1 );
 		WFIFOL(fd,68) = 0;
+		WFIFOB(fd,72) = 0;
+		WFIFOB(fd,73) = 0;
+		WFIFOB(fd,74) = 0;
 	}
-	WFIFOSET(fd,72);
+	WFIFOSET(fd,75);
 }
 
 void login_fromchar_parse_account_data(int fd, int id, const char *const ip)
@@ -978,6 +993,12 @@ int login_parse_fromchar(int fd)
 				login->fromchar_parse_accinfo(fd);
 			}
 		break;
+
+		case 0x2742:
+			if ( RFIFOREST(fd) < 11 ) return 0;
+			login->fromchar_parse_reqvipdata(fd, id, ip);
+		break;
+
 		default:
 			ShowError("login_parse_fromchar: Unknown packet 0x%x from a char-server! Disconnecting!\n", command);
 			sockt->eof(fd);
@@ -1034,7 +1055,12 @@ int login_mmo_auth_new(const char* userid, const char* pass, const char sex, con
 	safestrncpy(acc.birthdate, "0000-00-00", sizeof(acc.birthdate));
 	safestrncpy(acc.pincode, "\0", sizeof(acc.pincode));
 	acc.pincode_change = 0;
-	acc.char_slots = 0;
+	acc.char_slots = MIN_CHARS;
+
+#ifdef VIP_ENABLE
+	acc.vip_time = 0;
+	acc.old_group = 0;
+#endif
 
 	if( !accounts->create(accounts, &acc) )
 		return 0;
@@ -1336,6 +1362,65 @@ void login_auth_failed(struct login_session_data *sd, int result)
 	lclif->auth_failed(fd, ban_time, result);
 }
 
+int login_fromchar_sendvipdata(int fd, int id, const char *const ip, struct mmo_account acc, char isvip) {
+#ifdef VIP_ENABLE
+	uint8 buf[16];
+
+	WBUFW(buf,0) = 0x2743;
+	WBUFL(buf,2) = acc.account_id;
+	WBUFL(buf,6) = acc.vip_time;
+	WBUFB(buf,10) = isvip;
+	WBUFL(buf,11) = acc.group_id; //new group id
+	charif_sendallwos(-1,buf,15); //inform all char-servs of result
+
+	login_fromchar_parse_account_data(fd, id, ip);
+#endif
+	return 1;
+}
+
+/**
+ * Received a vip data reqest from char
+ * type is the query to perform
+ *  &1 : Select info and update old_groupid
+ *  &2 : Update vip time
+ * @param fd link to charserv
+ * @return 0 missing data, 1 succeed
+ */
+int login_fromchar_parse_reqvipdata(int fd, int id, const char *const ip) {
+#ifdef VIP_ENABLE
+	struct mmo_account acc;
+	int aid = RFIFOL(fd,2);
+	int8 type = RFIFOB(fd,6);
+	uint32 req_duration = RFIFOL(fd,7);
+	RFIFOSKIP(fd,11);
+
+	if( accounts->load_num(accounts, &acc, aid ) ){
+		time_t now = time(NULL);
+		time_t vip_time = acc.vip_time;
+		bool isvip = false;
+
+		if( type&2 ) vip_time = now + req_duration; // set new duration
+		if( now < vip_time ) { //isvip
+			if(acc.group_id != login->config->vip_group_id) //only upd this if we're not vip already
+				acc.old_group = acc.group_id;
+			acc.group_id = login->config->vip_group_id;
+			acc.char_slots = login->config->chars_per_account + login->config->vip_char_increase;
+			isvip = true;
+		} else { //expired
+			vip_time = 0;
+			acc.group_id = acc.old_group;
+			acc.old_group = 0;
+			acc.char_slots = login->config->chars_per_account;
+		}
+		acc.vip_time = (int)vip_time;
+		accounts->save(accounts,&acc);
+
+		login->fromchar_sendvipdata(fd, id, ip, acc, isvip);
+	}
+#endif
+	return 1;
+}
+
 bool login_client_login(int fd, struct login_session_data *sd) __attribute__((nonnull (2)));
 bool login_client_login(int fd, struct login_session_data *sd)
 {
@@ -1492,6 +1577,12 @@ void login_config_set_defaults(void)
 
 	login->config->client_hash_check = 0;
 	login->config->client_hash_nodes = NULL;
+
+	login->config->chars_per_account = MAX_CHARS - MAX_CHAR_VIP - MAX_CHAR_BILLING;
+#ifdef VIP_ENABLE
+	login->config->vip_char_increase = MAX_CHAR_VIP;
+	login->config->vip_group_id = 5;
+#endif
 }
 
 /**
@@ -1743,6 +1834,39 @@ bool login_config_read_permission_hash(const char *filename, struct config_t *co
 }
 
 /**
+ * Reads 'login_configuration/vip' and initializes required variables.
+ *
+ * @param filename Path to configuration file (used in error and warning messages).
+ * @param config   The current config being parsed.
+ * @param imported Whether the current config is imported from another file.
+ *
+ * @retval false in case of error.
+ */
+bool login_config_read_vip(const char *filename, struct config_t *config, bool imported)
+{
+	struct config_setting_t *setting = NULL;
+
+	nullpo_retr(false, filename);
+	nullpo_retr(false, config);
+
+	if ((setting = libconfig->lookup(config, "login_configuration/vip")) == NULL) {
+		if (imported)
+			return true;
+		ShowError("login_config_read: login_configuration/vip was not found in %s!\n", filename);
+		return false;
+	}
+
+	libconfig->setting_lookup_int(setting, "chars_per_account", &login->config->chars_per_account);
+#ifdef VIP_ENABLE
+	libconfig->setting_lookup_uint32(setting, "group_id", &login->config->vip_group_id);
+	libconfig->setting_lookup_uint32(setting, "char_increase", &login->config->vip_char_increase);
+
+#endif
+
+	return true;
+}
+
+/**
  * Clears login->config->dnsbl_servers, freeing any allocated memory.
  */
 void login_clear_dnsbl_servers(void)
@@ -1909,6 +2033,8 @@ bool login_config_read(const char *filename, bool imported)
 	if (!login->config_read_account(filename, &config, imported))
 		retval = false;
 	if (!login->config_read_permission(filename, &config, imported))
+		retval = false;
+	if (!login->config_read_vip(filename, &config, imported))
 		retval = false;
 	if (!login->config_read_users(filename, &config, imported))
 		retval = false;
@@ -2262,6 +2388,9 @@ void login_defaults(void)
 	login->fromchar_parse_wrong_pincode = login_fromchar_parse_wrong_pincode;
 	login->fromchar_parse_accinfo = login_fromchar_parse_accinfo;
 
+	login->fromchar_sendvipdata = login_fromchar_sendvipdata;
+	login->fromchar_parse_reqvipdata = login_fromchar_parse_reqvipdata;
+
 	login->parse_fromchar = login_parse_fromchar;
 	login->client_login = login_client_login;
 	login->client_login_otp = login_client_login_otp;
@@ -2281,6 +2410,7 @@ void login_defaults(void)
 	login->config_read_permission_hash = login_config_read_permission_hash;
 	login->config_read_permission_blacklist = login_config_read_permission_blacklist;
 	login->config_read_users = login_config_read_users;
+	login->config_read_vip = login_config_read_vip;
 	login->config_set_dnsbl_servers = login_config_set_dnsbl_servers;
 
 	login->clear_dnsbl_servers = login_clear_dnsbl_servers;
