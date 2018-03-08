@@ -219,8 +219,6 @@ CREATE TABLE IF NOT EXISTS `char` (
   `uniqueitem_counter` BIGINT(20) UNSIGNED NOT NULL DEFAULT '0',
   `sex` ENUM('M','F','U') NOT NULL DEFAULT 'U',
   `hotkey_rowshift` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
-  `vip_time` INT(11) UNSIGNED NOT NULL DEFAULT '0',
-  `old_group` TINYINT(3) NOT NULL DEFAULT '0',
   PRIMARY KEY (`char_id`),
   UNIQUE KEY `name_key` (`name`),
   KEY `account_id` (`account_id`),
@@ -619,6 +617,8 @@ CREATE TABLE IF NOT EXISTS `login` (
   `character_slots` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
   `pincode` VARCHAR(4) NOT NULL DEFAULT '',
   `pincode_change` INT(11) UNSIGNED NOT NULL DEFAULT '0',
+  `vip_time` INT(11) UNSIGNED NOT NULL DEFAULT '0',
+  `old_group` TINYINT(3) NOT NULL DEFAULT '0',
   PRIMARY KEY (`account_id`),
   KEY `name` (`userid`)
 ) ENGINE=MyISAM AUTO_INCREMENT=2000000;
@@ -891,6 +891,7 @@ INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1489588190); -- 2017-03-1
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1496588640); -- 2017-06-04--15-04.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1496588700); -- 2017-06-04--15-05.sql
 INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1509835214); -- 2017-11-04--10-39.sql
+INSERT IGNORE INTO `sql_updates` (`timestamp`) VALUES (1520549498); -- 2018-03-08--23-50.sql
 --
 -- Table structure for table `storage`
 --

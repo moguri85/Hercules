@@ -9646,7 +9646,6 @@ ACMD(vip)
 	struct map_session_data *pl_sd = NULL;
 	char * modif_p;
 	int viptime = 0;
-	nullpo_retr(-1, sd);
 
 	if (!*message || sscanf(message, "%255s %23[^\n]",atcmd_output,atcmd_player_name) < 2) {
 		clif->message(fd, msg_fd(fd,700));	//Usage: @vip <time> <character name>
