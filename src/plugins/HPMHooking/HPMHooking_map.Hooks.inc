@@ -5175,15 +5175,15 @@ bool HP_chrif_changeemail(int id, const char *actual_email, const char *new_emai
 	}
 	return retVal___;
 }
-bool HP_chrif_char_ask_name(int acc, const char *character_name, unsigned short operation_type, int year, int month, int day, int hour, int minute, int second) {
+bool HP_chrif_char_ask_name(int acc, const char *character_name, unsigned short operation_type, time_t timediff, int val1, int val2) {
 	int hIndex = 0;
 	bool retVal___ = false;
 	if (HPMHooks.count.HP_chrif_char_ask_name_pre > 0) {
-		bool (*preHookFunc) (int *acc, const char **character_name, unsigned short *operation_type, int *year, int *month, int *day, int *hour, int *minute, int *second);
+		bool (*preHookFunc) (int *acc, const char **character_name, unsigned short *operation_type, time_t *timediff, int *val1, int *val2);
 		*HPMforce_return = false;
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_chrif_char_ask_name_pre; hIndex++) {
 			preHookFunc = HPMHooks.list.HP_chrif_char_ask_name_pre[hIndex].func;
-			retVal___ = preHookFunc(&acc, &character_name, &operation_type, &year, &month, &day, &hour, &minute, &second);
+			retVal___ = preHookFunc(&acc, &character_name, &operation_type, &timediff, &val1, &val2);
 		}
 		if (*HPMforce_return) {
 			*HPMforce_return = false;
@@ -5191,13 +5191,13 @@ bool HP_chrif_char_ask_name(int acc, const char *character_name, unsigned short 
 		}
 	}
 	{
-		retVal___ = HPMHooks.source.chrif.char_ask_name(acc, character_name, operation_type, year, month, day, hour, minute, second);
+		retVal___ = HPMHooks.source.chrif.char_ask_name(acc, character_name, operation_type, timediff, val1, val2);
 	}
 	if (HPMHooks.count.HP_chrif_char_ask_name_post > 0) {
-		bool (*postHookFunc) (bool retVal___, int acc, const char *character_name, unsigned short operation_type, int year, int month, int day, int hour, int minute, int second);
+		bool (*postHookFunc) (bool retVal___, int acc, const char *character_name, unsigned short operation_type, time_t timediff, int val1, int val2);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_chrif_char_ask_name_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_chrif_char_ask_name_post[hIndex].func;
-			retVal___ = postHookFunc(retVal___, acc, character_name, operation_type, year, month, day, hour, minute, second);
+			retVal___ = postHookFunc(retVal___, acc, character_name, operation_type, timediff, val1, val2);
 		}
 	}
 	return retVal___;
@@ -6491,6 +6491,32 @@ void HP_chrif_del_scdata_single(int account_id, int char_id, short type) {
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_chrif_del_scdata_single_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_chrif_del_scdata_single_post[hIndex].func;
 			postHookFunc(account_id, char_id, type);
+		}
+	}
+	return;
+}
+void HP_chrif_parse_ack_vipActive(int fd) {
+	int hIndex = 0;
+	if (HPMHooks.count.HP_chrif_parse_ack_vipActive_pre > 0) {
+		void (*preHookFunc) (int *fd);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_chrif_parse_ack_vipActive_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_chrif_parse_ack_vipActive_pre[hIndex].func;
+			preHookFunc(&fd);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.chrif.parse_ack_vipActive(fd);
+	}
+	if (HPMHooks.count.HP_chrif_parse_ack_vipActive_post > 0) {
+		void (*postHookFunc) (int fd);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_chrif_parse_ack_vipActive_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_chrif_parse_ack_vipActive_post[hIndex].func;
+			postHookFunc(fd);
 		}
 	}
 	return;
@@ -26013,6 +26039,32 @@ void HP_clif_pClanMessage(int fd, struct map_session_data *sd) {
 		void (*postHookFunc) (int fd, struct map_session_data *sd);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_clif_pClanMessage_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_clif_pClanMessage_post[hIndex].func;
+			postHookFunc(fd, sd);
+		}
+	}
+	return;
+}
+void HP_clif_display_pinfo(int fd, struct map_session_data *sd) {
+	int hIndex = 0;
+	if (HPMHooks.count.HP_clif_display_pinfo_pre > 0) {
+		void (*preHookFunc) (int *fd, struct map_session_data **sd);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_clif_display_pinfo_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_clif_display_pinfo_pre[hIndex].func;
+			preHookFunc(&fd, &sd);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.clif.display_pinfo(fd, sd);
+	}
+	if (HPMHooks.count.HP_clif_display_pinfo_post > 0) {
+		void (*postHookFunc) (int fd, struct map_session_data *sd);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_clif_display_pinfo_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_clif_display_pinfo_post[hIndex].func;
 			postHookFunc(fd, sd);
 		}
 	}
@@ -82593,6 +82645,86 @@ unsigned long HP_timer_get_uptime(void) {
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_get_uptime_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_timer_get_uptime_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___);
+		}
+	}
+	return retVal___;
+}
+const char* HP_timer_timestamp2string(char *str, size_t size, time_t timestamp, const char *format) {
+	int hIndex = 0;
+	const char* retVal___ = NULL;
+	if (HPMHooks.count.HP_timer_timestamp2string_pre > 0) {
+		const char* (*preHookFunc) (char **str, size_t *size, time_t *timestamp, const char **format);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_timestamp2string_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_timestamp2string_pre[hIndex].func;
+			retVal___ = preHookFunc(&str, &size, &timestamp, &format);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.timer.timestamp2string(str, size, timestamp, format);
+	}
+	if (HPMHooks.count.HP_timer_timestamp2string_post > 0) {
+		const char* (*postHookFunc) (const char* retVal___, char *str, size_t size, time_t timestamp, const char *format);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_timestamp2string_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_timestamp2string_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, str, size, timestamp, format);
+		}
+	}
+	return retVal___;
+}
+void HP_timer_split_time(int time, int *year, int *month, int *day, int *hour, int *minute, int *second) {
+	int hIndex = 0;
+	if (HPMHooks.count.HP_timer_split_time_pre > 0) {
+		void (*preHookFunc) (int *time, int **year, int **month, int **day, int **hour, int **minute, int **second);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_split_time_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_split_time_pre[hIndex].func;
+			preHookFunc(&time, &year, &month, &day, &hour, &minute, &second);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.timer.split_time(time, year, month, day, hour, minute, second);
+	}
+	if (HPMHooks.count.HP_timer_split_time_post > 0) {
+		void (*postHookFunc) (int time, int *year, int *month, int *day, int *hour, int *minute, int *second);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_split_time_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_split_time_post[hIndex].func;
+			postHookFunc(time, year, month, day, hour, minute, second);
+		}
+	}
+	return;
+}
+double HP_timer_solve_time(char *modif_p) {
+	int hIndex = 0;
+	double retVal___ = 0.;
+	if (HPMHooks.count.HP_timer_solve_time_pre > 0) {
+		double (*preHookFunc) (char **modif_p);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_solve_time_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_solve_time_pre[hIndex].func;
+			retVal___ = preHookFunc(&modif_p);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.timer.solve_time(modif_p);
+	}
+	if (HPMHooks.count.HP_timer_solve_time_post > 0) {
+		double (*postHookFunc) (double retVal___, char *modif_p);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_solve_time_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_solve_time_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, modif_p);
 		}
 	}
 	return retVal___;

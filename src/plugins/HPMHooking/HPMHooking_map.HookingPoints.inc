@@ -273,6 +273,7 @@ struct HookingPointData HookingPoints[] = {
 	{ HP_POP(chrif->parse, HP_chrif_parse) },
 	{ HP_POP(chrif->save_scdata_single, HP_chrif_save_scdata_single) },
 	{ HP_POP(chrif->del_scdata_single, HP_chrif_del_scdata_single) },
+	{ HP_POP(chrif->parse_ack_vipActive, HP_chrif_parse_ack_vipActive) },
 /* clan_interface */
 	{ HP_POP(clan->init, HP_clan_init) },
 	{ HP_POP(clan->final, HP_clan_final) },
@@ -1022,6 +1023,7 @@ struct HookingPointData HookingPoints[] = {
 	{ HP_POP(clif->clan_leave, HP_clif_clan_leave) },
 	{ HP_POP(clif->clan_message, HP_clif_clan_message) },
 	{ HP_POP(clif->pClanMessage, HP_clif_pClanMessage) },
+	{ HP_POP(clif->display_pinfo, HP_clif_display_pinfo) },
 /* cmdline_interface */
 	{ HP_POP(cmdline->init, HP_cmdline_init) },
 	{ HP_POP(cmdline->final, HP_cmdline_final) },
@@ -3158,6 +3160,9 @@ struct HookingPointData HookingPoints[] = {
 	{ HP_POP(timer->settick, HP_timer_settick) },
 	{ HP_POP(timer->add_func_list, HP_timer_add_func_list) },
 	{ HP_POP(timer->get_uptime, HP_timer_get_uptime) },
+	{ HP_POP(timer->timestamp2string, HP_timer_timestamp2string) },
+	{ HP_POP(timer->split_time, HP_timer_split_time) },
+	{ HP_POP(timer->solve_time, HP_timer_solve_time) },
 	{ HP_POP(timer->perform, HP_timer_perform) },
 	{ HP_POP(timer->init, HP_timer_init) },
 	{ HP_POP(timer->final, HP_timer_final) },

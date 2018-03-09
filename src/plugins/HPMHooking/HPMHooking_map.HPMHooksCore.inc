@@ -504,6 +504,8 @@ struct {
 	struct HPMHookPoint *HP_chrif_save_scdata_single_post;
 	struct HPMHookPoint *HP_chrif_del_scdata_single_pre;
 	struct HPMHookPoint *HP_chrif_del_scdata_single_post;
+	struct HPMHookPoint *HP_chrif_parse_ack_vipActive_pre;
+	struct HPMHookPoint *HP_chrif_parse_ack_vipActive_post;
 	struct HPMHookPoint *HP_clan_init_pre;
 	struct HPMHookPoint *HP_clan_init_post;
 	struct HPMHookPoint *HP_clan_final_pre;
@@ -1998,6 +2000,8 @@ struct {
 	struct HPMHookPoint *HP_clif_clan_message_post;
 	struct HPMHookPoint *HP_clif_pClanMessage_pre;
 	struct HPMHookPoint *HP_clif_pClanMessage_post;
+	struct HPMHookPoint *HP_clif_display_pinfo_pre;
+	struct HPMHookPoint *HP_clif_display_pinfo_post;
 	struct HPMHookPoint *HP_cmdline_init_pre;
 	struct HPMHookPoint *HP_cmdline_init_post;
 	struct HPMHookPoint *HP_cmdline_final_pre;
@@ -6166,6 +6170,12 @@ struct {
 	struct HPMHookPoint *HP_timer_add_func_list_post;
 	struct HPMHookPoint *HP_timer_get_uptime_pre;
 	struct HPMHookPoint *HP_timer_get_uptime_post;
+	struct HPMHookPoint *HP_timer_timestamp2string_pre;
+	struct HPMHookPoint *HP_timer_timestamp2string_post;
+	struct HPMHookPoint *HP_timer_split_time_pre;
+	struct HPMHookPoint *HP_timer_split_time_post;
+	struct HPMHookPoint *HP_timer_solve_time_pre;
+	struct HPMHookPoint *HP_timer_solve_time_post;
 	struct HPMHookPoint *HP_timer_perform_pre;
 	struct HPMHookPoint *HP_timer_perform_post;
 	struct HPMHookPoint *HP_timer_init_pre;
@@ -6785,6 +6795,8 @@ struct {
 	int HP_chrif_save_scdata_single_post;
 	int HP_chrif_del_scdata_single_pre;
 	int HP_chrif_del_scdata_single_post;
+	int HP_chrif_parse_ack_vipActive_pre;
+	int HP_chrif_parse_ack_vipActive_post;
 	int HP_clan_init_pre;
 	int HP_clan_init_post;
 	int HP_clan_final_pre;
@@ -8279,6 +8291,8 @@ struct {
 	int HP_clif_clan_message_post;
 	int HP_clif_pClanMessage_pre;
 	int HP_clif_pClanMessage_post;
+	int HP_clif_display_pinfo_pre;
+	int HP_clif_display_pinfo_post;
 	int HP_cmdline_init_pre;
 	int HP_cmdline_init_post;
 	int HP_cmdline_final_pre;
@@ -12447,6 +12461,12 @@ struct {
 	int HP_timer_add_func_list_post;
 	int HP_timer_get_uptime_pre;
 	int HP_timer_get_uptime_post;
+	int HP_timer_timestamp2string_pre;
+	int HP_timer_timestamp2string_post;
+	int HP_timer_split_time_pre;
+	int HP_timer_split_time_post;
+	int HP_timer_solve_time_pre;
+	int HP_timer_solve_time_post;
 	int HP_timer_perform_pre;
 	int HP_timer_perform_post;
 	int HP_timer_init_pre;

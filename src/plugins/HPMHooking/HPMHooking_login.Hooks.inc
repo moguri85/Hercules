@@ -5362,6 +5362,60 @@ void HP_login_fromchar_parse_accinfo(int fd) {
 	}
 	return;
 }
+int HP_login_fromchar_sendvipdata(int fd, int id, const char *ip, struct mmo_account acc, char isvip) {
+	int hIndex = 0;
+	int retVal___ = 0;
+	if (HPMHooks.count.HP_login_fromchar_sendvipdata_pre > 0) {
+		int (*preHookFunc) (int *fd, int *id, const char **ip, struct mmo_account *acc, char *isvip);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_fromchar_sendvipdata_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_login_fromchar_sendvipdata_pre[hIndex].func;
+			retVal___ = preHookFunc(&fd, &id, &ip, &acc, &isvip);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.login.fromchar_sendvipdata(fd, id, ip, acc, isvip);
+	}
+	if (HPMHooks.count.HP_login_fromchar_sendvipdata_post > 0) {
+		int (*postHookFunc) (int retVal___, int fd, int id, const char *ip, struct mmo_account acc, char isvip);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_fromchar_sendvipdata_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_login_fromchar_sendvipdata_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, fd, id, ip, acc, isvip);
+		}
+	}
+	return retVal___;
+}
+int HP_login_fromchar_parse_reqvipdata(int fd, int id, const char *ip) {
+	int hIndex = 0;
+	int retVal___ = 0;
+	if (HPMHooks.count.HP_login_fromchar_parse_reqvipdata_pre > 0) {
+		int (*preHookFunc) (int *fd, int *id, const char **ip);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_fromchar_parse_reqvipdata_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_login_fromchar_parse_reqvipdata_pre[hIndex].func;
+			retVal___ = preHookFunc(&fd, &id, &ip);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.login.fromchar_parse_reqvipdata(fd, id, ip);
+	}
+	if (HPMHooks.count.HP_login_fromchar_parse_reqvipdata_post > 0) {
+		int (*postHookFunc) (int retVal___, int fd, int id, const char *ip);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_fromchar_parse_reqvipdata_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_login_fromchar_parse_reqvipdata_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, fd, id, ip);
+		}
+	}
+	return retVal___;
+}
 int HP_login_parse_fromchar(int fd) {
 	int hIndex = 0;
 	int retVal___ = 0;
@@ -5810,6 +5864,33 @@ bool HP_login_config_read_permission_blacklist(const char *filename, struct conf
 		bool (*postHookFunc) (bool retVal___, const char *filename, struct config_t *config, bool imported);
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_config_read_permission_blacklist_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_login_config_read_permission_blacklist_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, filename, config, imported);
+		}
+	}
+	return retVal___;
+}
+bool HP_login_config_read_vip(const char *filename, struct config_t *config, bool imported) {
+	int hIndex = 0;
+	bool retVal___ = false;
+	if (HPMHooks.count.HP_login_config_read_vip_pre > 0) {
+		bool (*preHookFunc) (const char **filename, struct config_t **config, bool *imported);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_config_read_vip_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_login_config_read_vip_pre[hIndex].func;
+			retVal___ = preHookFunc(&filename, &config, &imported);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.login.config_read_vip(filename, config, imported);
+	}
+	if (HPMHooks.count.HP_login_config_read_vip_post > 0) {
+		bool (*postHookFunc) (bool retVal___, const char *filename, struct config_t *config, bool imported);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_login_config_read_vip_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_login_config_read_vip_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___, filename, config, imported);
 		}
 	}
@@ -10389,6 +10470,86 @@ unsigned long HP_timer_get_uptime(void) {
 		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_get_uptime_post; hIndex++) {
 			postHookFunc = HPMHooks.list.HP_timer_get_uptime_post[hIndex].func;
 			retVal___ = postHookFunc(retVal___);
+		}
+	}
+	return retVal___;
+}
+const char* HP_timer_timestamp2string(char *str, size_t size, time_t timestamp, const char *format) {
+	int hIndex = 0;
+	const char* retVal___ = NULL;
+	if (HPMHooks.count.HP_timer_timestamp2string_pre > 0) {
+		const char* (*preHookFunc) (char **str, size_t *size, time_t *timestamp, const char **format);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_timestamp2string_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_timestamp2string_pre[hIndex].func;
+			retVal___ = preHookFunc(&str, &size, &timestamp, &format);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.timer.timestamp2string(str, size, timestamp, format);
+	}
+	if (HPMHooks.count.HP_timer_timestamp2string_post > 0) {
+		const char* (*postHookFunc) (const char* retVal___, char *str, size_t size, time_t timestamp, const char *format);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_timestamp2string_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_timestamp2string_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, str, size, timestamp, format);
+		}
+	}
+	return retVal___;
+}
+void HP_timer_split_time(int time, int *year, int *month, int *day, int *hour, int *minute, int *second) {
+	int hIndex = 0;
+	if (HPMHooks.count.HP_timer_split_time_pre > 0) {
+		void (*preHookFunc) (int *time, int **year, int **month, int **day, int **hour, int **minute, int **second);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_split_time_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_split_time_pre[hIndex].func;
+			preHookFunc(&time, &year, &month, &day, &hour, &minute, &second);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return;
+		}
+	}
+	{
+		HPMHooks.source.timer.split_time(time, year, month, day, hour, minute, second);
+	}
+	if (HPMHooks.count.HP_timer_split_time_post > 0) {
+		void (*postHookFunc) (int time, int *year, int *month, int *day, int *hour, int *minute, int *second);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_split_time_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_split_time_post[hIndex].func;
+			postHookFunc(time, year, month, day, hour, minute, second);
+		}
+	}
+	return;
+}
+double HP_timer_solve_time(char *modif_p) {
+	int hIndex = 0;
+	double retVal___ = 0.;
+	if (HPMHooks.count.HP_timer_solve_time_pre > 0) {
+		double (*preHookFunc) (char **modif_p);
+		*HPMforce_return = false;
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_solve_time_pre; hIndex++) {
+			preHookFunc = HPMHooks.list.HP_timer_solve_time_pre[hIndex].func;
+			retVal___ = preHookFunc(&modif_p);
+		}
+		if (*HPMforce_return) {
+			*HPMforce_return = false;
+			return retVal___;
+		}
+	}
+	{
+		retVal___ = HPMHooks.source.timer.solve_time(modif_p);
+	}
+	if (HPMHooks.count.HP_timer_solve_time_post > 0) {
+		double (*postHookFunc) (double retVal___, char *modif_p);
+		for (hIndex = 0; hIndex < HPMHooks.count.HP_timer_solve_time_post; hIndex++) {
+			postHookFunc = HPMHooks.list.HP_timer_solve_time_post[hIndex].func;
+			retVal___ = postHookFunc(retVal___, modif_p);
 		}
 	}
 	return retVal___;

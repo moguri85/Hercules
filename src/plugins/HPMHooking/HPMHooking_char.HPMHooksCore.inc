@@ -140,6 +140,10 @@ struct {
 	struct HPMHookPoint *HP_chr_parse_fromlogin_accinfo2_failed_post;
 	struct HPMHookPoint *HP_chr_parse_fromlogin_accinfo2_ok_pre;
 	struct HPMHookPoint *HP_chr_parse_fromlogin_accinfo2_ok_post;
+	struct HPMHookPoint *HP_chr_parse_fromlogin_reqvipdata_pre;
+	struct HPMHookPoint *HP_chr_parse_fromlogin_reqvipdata_post;
+	struct HPMHookPoint *HP_chr_parse_fromlogin_vipack_pre;
+	struct HPMHookPoint *HP_chr_parse_fromlogin_vipack_post;
 	struct HPMHookPoint *HP_chr_parse_fromlogin_pre;
 	struct HPMHookPoint *HP_chr_parse_fromlogin_post;
 	struct HPMHookPoint *HP_chr_request_accreg2_pre;
@@ -240,6 +244,8 @@ struct {
 	struct HPMHookPoint *HP_chr_parse_frommap_scdata_update_post;
 	struct HPMHookPoint *HP_chr_parse_frommap_scdata_delete_pre;
 	struct HPMHookPoint *HP_chr_parse_frommap_scdata_delete_post;
+	struct HPMHookPoint *HP_chr_parse_frommap_vipack_pre;
+	struct HPMHookPoint *HP_chr_parse_frommap_vipack_post;
 	struct HPMHookPoint *HP_chr_parse_frommap_pre;
 	struct HPMHookPoint *HP_chr_parse_frommap_post;
 	struct HPMHookPoint *HP_chr_search_mapserver_pre;
@@ -1546,6 +1552,12 @@ struct {
 	struct HPMHookPoint *HP_timer_add_func_list_post;
 	struct HPMHookPoint *HP_timer_get_uptime_pre;
 	struct HPMHookPoint *HP_timer_get_uptime_post;
+	struct HPMHookPoint *HP_timer_timestamp2string_pre;
+	struct HPMHookPoint *HP_timer_timestamp2string_post;
+	struct HPMHookPoint *HP_timer_split_time_pre;
+	struct HPMHookPoint *HP_timer_split_time_post;
+	struct HPMHookPoint *HP_timer_solve_time_pre;
+	struct HPMHookPoint *HP_timer_solve_time_post;
 	struct HPMHookPoint *HP_timer_perform_pre;
 	struct HPMHookPoint *HP_timer_perform_post;
 	struct HPMHookPoint *HP_timer_init_pre;
@@ -1669,6 +1681,10 @@ struct {
 	int HP_chr_parse_fromlogin_accinfo2_failed_post;
 	int HP_chr_parse_fromlogin_accinfo2_ok_pre;
 	int HP_chr_parse_fromlogin_accinfo2_ok_post;
+	int HP_chr_parse_fromlogin_reqvipdata_pre;
+	int HP_chr_parse_fromlogin_reqvipdata_post;
+	int HP_chr_parse_fromlogin_vipack_pre;
+	int HP_chr_parse_fromlogin_vipack_post;
 	int HP_chr_parse_fromlogin_pre;
 	int HP_chr_parse_fromlogin_post;
 	int HP_chr_request_accreg2_pre;
@@ -1769,6 +1785,8 @@ struct {
 	int HP_chr_parse_frommap_scdata_update_post;
 	int HP_chr_parse_frommap_scdata_delete_pre;
 	int HP_chr_parse_frommap_scdata_delete_post;
+	int HP_chr_parse_frommap_vipack_pre;
+	int HP_chr_parse_frommap_vipack_post;
 	int HP_chr_parse_frommap_pre;
 	int HP_chr_parse_frommap_post;
 	int HP_chr_search_mapserver_pre;
@@ -3075,6 +3093,12 @@ struct {
 	int HP_timer_add_func_list_post;
 	int HP_timer_get_uptime_pre;
 	int HP_timer_get_uptime_post;
+	int HP_timer_timestamp2string_pre;
+	int HP_timer_timestamp2string_post;
+	int HP_timer_split_time_pre;
+	int HP_timer_split_time_post;
+	int HP_timer_solve_time_pre;
+	int HP_timer_solve_time_post;
 	int HP_timer_perform_pre;
 	int HP_timer_perform_post;
 	int HP_timer_init_pre;

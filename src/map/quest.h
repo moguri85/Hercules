@@ -29,7 +29,7 @@ struct block_list;
 struct config_setting_t;
 struct map_session_data;
 
-#define MAX_QUEST_DB (60355+1) // Highest quest ID + 1
+#define MAX_QUEST_DB (62238+1) // Highest quest ID + 1
 
 struct quest_dropitem {
 	int mob_id;

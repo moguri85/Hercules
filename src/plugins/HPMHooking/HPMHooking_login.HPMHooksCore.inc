@@ -424,6 +424,10 @@ struct {
 	struct HPMHookPoint *HP_login_fromchar_parse_wrong_pincode_post;
 	struct HPMHookPoint *HP_login_fromchar_parse_accinfo_pre;
 	struct HPMHookPoint *HP_login_fromchar_parse_accinfo_post;
+	struct HPMHookPoint *HP_login_fromchar_sendvipdata_pre;
+	struct HPMHookPoint *HP_login_fromchar_sendvipdata_post;
+	struct HPMHookPoint *HP_login_fromchar_parse_reqvipdata_pre;
+	struct HPMHookPoint *HP_login_fromchar_parse_reqvipdata_post;
 	struct HPMHookPoint *HP_login_parse_fromchar_pre;
 	struct HPMHookPoint *HP_login_parse_fromchar_post;
 	struct HPMHookPoint *HP_login_kick_pre;
@@ -458,6 +462,8 @@ struct {
 	struct HPMHookPoint *HP_login_config_read_permission_hash_post;
 	struct HPMHookPoint *HP_login_config_read_permission_blacklist_pre;
 	struct HPMHookPoint *HP_login_config_read_permission_blacklist_post;
+	struct HPMHookPoint *HP_login_config_read_vip_pre;
+	struct HPMHookPoint *HP_login_config_read_vip_post;
 	struct HPMHookPoint *HP_login_config_read_users_pre;
 	struct HPMHookPoint *HP_login_config_read_users_post;
 	struct HPMHookPoint *HP_login_clear_dnsbl_servers_pre;
@@ -798,6 +804,12 @@ struct {
 	struct HPMHookPoint *HP_timer_add_func_list_post;
 	struct HPMHookPoint *HP_timer_get_uptime_pre;
 	struct HPMHookPoint *HP_timer_get_uptime_post;
+	struct HPMHookPoint *HP_timer_timestamp2string_pre;
+	struct HPMHookPoint *HP_timer_timestamp2string_post;
+	struct HPMHookPoint *HP_timer_split_time_pre;
+	struct HPMHookPoint *HP_timer_split_time_post;
+	struct HPMHookPoint *HP_timer_solve_time_pre;
+	struct HPMHookPoint *HP_timer_solve_time_post;
 	struct HPMHookPoint *HP_timer_perform_pre;
 	struct HPMHookPoint *HP_timer_perform_post;
 	struct HPMHookPoint *HP_timer_init_pre;
@@ -1205,6 +1217,10 @@ struct {
 	int HP_login_fromchar_parse_wrong_pincode_post;
 	int HP_login_fromchar_parse_accinfo_pre;
 	int HP_login_fromchar_parse_accinfo_post;
+	int HP_login_fromchar_sendvipdata_pre;
+	int HP_login_fromchar_sendvipdata_post;
+	int HP_login_fromchar_parse_reqvipdata_pre;
+	int HP_login_fromchar_parse_reqvipdata_post;
 	int HP_login_parse_fromchar_pre;
 	int HP_login_parse_fromchar_post;
 	int HP_login_kick_pre;
@@ -1239,6 +1255,8 @@ struct {
 	int HP_login_config_read_permission_hash_post;
 	int HP_login_config_read_permission_blacklist_pre;
 	int HP_login_config_read_permission_blacklist_post;
+	int HP_login_config_read_vip_pre;
+	int HP_login_config_read_vip_post;
 	int HP_login_config_read_users_pre;
 	int HP_login_config_read_users_post;
 	int HP_login_clear_dnsbl_servers_pre;
@@ -1579,6 +1597,12 @@ struct {
 	int HP_timer_add_func_list_post;
 	int HP_timer_get_uptime_pre;
 	int HP_timer_get_uptime_post;
+	int HP_timer_timestamp2string_pre;
+	int HP_timer_timestamp2string_post;
+	int HP_timer_split_time_pre;
+	int HP_timer_split_time_post;
+	int HP_timer_solve_time_pre;
+	int HP_timer_solve_time_post;
 	int HP_timer_perform_pre;
 	int HP_timer_perform_post;
 	int HP_timer_init_pre;
