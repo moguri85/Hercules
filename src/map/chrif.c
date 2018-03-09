@@ -109,7 +109,7 @@ struct chrif_interface *chrif;
 //2b29: FREE
 //2b2a: FREE
 //2b2b: Incoming, chrif_parse_ack_vipActive -> 'vip info result'
-//2b2c: Outgoing, chrif_req_vipActive -> 'request vip info'
+//2b2c: FREE
 //2b2d: FREE
 //2b2e: FREE
 //2b2f: FREE
@@ -791,7 +791,7 @@ bool chrif_changeemail(int id, const char *actual_email, const char *new_email) 
 
 /*==========================================
  * S 2b0e <accid>.l <name>.24B <type>.w { <additional fields>.12B }
- * { <year>.w <month>.w <day>.w <hour>.w <minute>.w <second>.w }
+ * { <timediff>.l <val1>.l <val2>.l }
  * Send an account modification request to the login server (via char server).
  * type of operation: @see enum zh_char_ask_name
  *   block         { n/a }
@@ -802,26 +802,23 @@ bool chrif_changeemail(int id, const char *actual_email, const char *new_email) 
  *   charban       { <year>.w <month>.w <day>.w <hour>.w <minute>.w <second>.w }
  *   charunban     { n/a }
  *   changecharsex { <sex>.b } -- use chrif_changesex
+ *   vip           { n/a }
  *------------------------------------------*/
-bool chrif_char_ask_name(int acc, const char* character_name, unsigned short operation_type, int year, int month, int day, int hour, int minute, int second)
+bool chrif_char_ask_name(int account_id, const char* character_name, unsigned short operation_type, time_t timediff, int val1, int val2)
 {
 	nullpo_retr(false, character_name);
 	chrif_check(false);
 
 	WFIFOHEAD(chrif->fd,44);
 	WFIFOW(chrif->fd,0) = 0x2b0e;
-	WFIFOL(chrif->fd,2) = acc;
+	WFIFOL(chrif->fd,2) = account_id;
 	safestrncpy(WFIFOP(chrif->fd,6), character_name, NAME_LENGTH);
 	WFIFOW(chrif->fd,30) = operation_type;
 
-	if (operation_type == CHAR_ASK_NAME_BAN || operation_type == CHAR_ASK_NAME_CHARBAN) {
-		WFIFOW(chrif->fd,32) = year;
-		WFIFOW(chrif->fd,34) = month;
-		WFIFOW(chrif->fd,36) = day;
-		WFIFOW(chrif->fd,38) = hour;
-		WFIFOW(chrif->fd,40) = minute;
-		WFIFOW(chrif->fd,42) = second;
-	}
+	if (operation_type == CHAR_ASK_NAME_BAN || operation_type == CHAR_ASK_NAME_CHARBAN || operation_type == CHAR_ASK_NAME_VIP)
+		WFIFOL(chrif->fd,32) = (int)timediff;
+	WFIFOL(chrif->fd,36) = val1;
+	WFIFOL(chrif->fd,40) = val2;
 
 	WFIFOSET(chrif->fd,44);
 	return true;
@@ -845,7 +842,7 @@ bool chrif_changesex(struct map_session_data *sd, bool change_account)
 	safestrncpy(WFIFOP(chrif->fd,6), sd->status.name, NAME_LENGTH);
 	WFIFOW(chrif->fd,30) = change_account ? CHAR_ASK_NAME_CHANGESEX : CHAR_ASK_NAME_CHANGECHARSEX;
 	if (!change_account)
-		WFIFOB(chrif->fd,32) = sd->status.sex == SEX_MALE ? SEX_FEMALE : SEX_MALE;
+		WFIFOB(chrif->fd,36) = sd->status.sex == SEX_MALE ? SEX_FEMALE : SEX_MALE;
 	WFIFOSET(chrif->fd,44);
 
 	clif->message(sd->fd, msg_sd(sd,408)); //"Disconnecting to perform change-sex request..."
@@ -1656,20 +1653,6 @@ void chrif_parse_ack_vipActive(int fd) {
 #endif
 }
 
-int chrif_req_vipActive(TBL_PC *sd, int8 req_duration, int8 type) {
-#ifdef VIP_ENABLE
-	if (chrif->isconnected() || sd == NULL)
-		return 0;
-
-	WFIFOHEAD(chrif->fd,11);
-	WFIFOW(chrif->fd,0) = 0x2b2c;
-	WFIFOL(chrif->fd,2) = sd->bl.id; // AID
-	WFIFOB(chrif->fd,6) = type; // type&1 - SQL SELECT, type&2 - SQL UPDATE
-	WFIFOL(chrif->fd,7) = req_duration;
-	WFIFOSET(chrif->fd,11);
-#endif
-	return 0;
-}
 
 /**
  * @see DBApply
@@ -1745,7 +1728,7 @@ void chrif_defaults(void) {
 		11, 10, 10,  0, 11,  0,266, 10, // 2b10-2b17: U->2b10, U->2b11, U->2b12, F->2b13, U->2b14, F->2b15, U->2b16, U->2b17
 		 2, 10,  2, -1, -1, -1,  2,  7, // 2b18-2b1f: U->2b18, U->2b19, U->2b1a, U->2b1b, U->2b1c, U->2b1d, U->2b1e, U->2b1f
 		-1, 10,  8,  2,  2, 14, 19, 19, // 2b20-2b27: U->2b20, U->2b21, U->2b22, U->2b23, U->2b24, U->2b25, U->2b26, U->2b27
-		 0,  0,  0, 15, 11,  0,  0,  0, // 2b28-2b2f: F->2b28, F->2b29, F->2b2a, U->2b2b, U->2b2c, F->2b2d, F->2b2e, F->2b2f
+		 0,  0,  0, 15,  0,  0,  0,  0, // 2b28-2b2f: F->2b28, F->2b29, F->2b2a, U->2b2b, F->2b2c, F->2b2d, F->2b2e, F->2b2f
 	};
 
 	chrif = &chrif_s;
@@ -1851,5 +1834,4 @@ void chrif_defaults(void) {
 	chrif->del_scdata_single = chrif_del_scdata_single;
 
 	chrif->parse_ack_vipActive = chrif_parse_ack_vipActive;
-	chrif->req_vipActive = chrif_req_vipActive;
 }

@@ -2913,23 +2913,6 @@ int char_loadName(int char_id, char* name)
 }
 
 /*
- * ZH 0x2b2c
- * HA 0x2742
- * We received a request vip_info from map-server.
- * Transmit it to login-serv as it's the one knowing the info
- */
-int char_parse_frommap_vipactive(int fd) {
-#ifdef VIP_ENABLE
-	uint32 aid = RFIFOL(fd,2); //aid
-	uint8 type = RFIFOB(fd,6); //type
-	uint32 adddur = RFIFOL(fd,7); //req_inc_duration
-	RFIFOSKIP(fd,11);
-	chr->parse_fromlogin_reqvipdata(aid, type, adddur);
-#endif
-	return 0;
-}
-
-/*
  * HZ 0x2b2b
  * Transmist vip data to mapserv
  */
@@ -2946,13 +2929,20 @@ int char_parse_frommap_vipack(int account_id, uint32 vip_time, uint8 isvip, uint
 	return 0;
 }
 
-/*
+/**
  * HZ 0x2b2b
  * Request vip data from loginserv
+ * @param aid : account_id to request the vip data
+ * @param type : &2 define new duration, &1 load info
+ * @param add_vip_time : tick to add to vip timestamp
+ * @param mapfd: link to mapserv for ack
+ * @return 0 if succes
  */
-int char_parse_fromlogin_reqvipdata(int account_id, uint8 type, uint32 add_vip_time) {
+int char_parse_fromlogin_reqvipdata(int account_id, uint8 type, int add_vip_time) {
+	if( !(chr->login_fd > 0 && sockt->session[chr->login_fd]) )
+		return -1;
 #ifdef VIP_ENABLE
-	WFIFOHEAD(chr->login_fd,11);
+	WFIFOHEAD(chr->login_fd,15);
 	WFIFOW(chr->login_fd,0) = 0x2742;
 	WFIFOL(chr->login_fd,2) =  account_id;
 	WFIFOB(chr->login_fd,6) = type;
@@ -3428,27 +3418,23 @@ void mapif_char_ban(int char_id, time_t timestamp)
 	mapif->sendall(buf, 11);
 }
 
-void char_ban(int account_id, int char_id, time_t *unban_time, short year, short month, short day, short hour, short minute, short second)
+void char_ban(int account_id, int char_id, time_t *unban_time, time_t timediff)
 {
 	time_t timestamp;
-	struct tm *tmtime;
 	struct SqlStmt *stmt = SQL->StmtMalloc(inter->sql_handle);
 
 	nullpo_retv(unban_time);
 
+	if (timediff > time(NULL))
+		timediff = timediff - time(NULL);
+
 	if (*unban_time == 0 || *unban_time < time(NULL))
 		timestamp = time(NULL); // new ban
-	else
+	else {
 		timestamp = *unban_time; // add to existing ban
+	}
 
-	tmtime = localtime(&timestamp);
-	tmtime->tm_year = tmtime->tm_year + year;
-	tmtime->tm_mon  = tmtime->tm_mon + month;
-	tmtime->tm_mday = tmtime->tm_mday + day;
-	tmtime->tm_hour = tmtime->tm_hour + hour;
-	tmtime->tm_min  = tmtime->tm_min + minute;
-	tmtime->tm_sec  = tmtime->tm_sec + second;
-	timestamp = mktime(tmtime);
+	timestamp += timediff;
 
 	if( SQL_SUCCESS != SQL->StmtPrepare(stmt,
 		"UPDATE `%s` SET `unban_time` = ? WHERE `char_id` = ? LIMIT 1",
@@ -3543,18 +3529,11 @@ void char_parse_frommap_change_account(int fd)
 	int acc = RFIFOL(fd,2); // account_id of who ask (-1 if server itself made this request)
 	const char *name = RFIFOP(fd,6); // name of the target character
 	int type = RFIFOW(fd,30); // type of operation: 1-block, 2-ban, 3-unblock, 4-unban, 5 changesex, 6 charban, 7 charunban
-	short year = 0, month = 0, day = 0, hour = 0, minute = 0, second = 0;
-	int sex = SEX_MALE;
-	if (type == 2 || type == 6) {
-		year = RFIFOW(fd,32);
-		month = RFIFOW(fd,34);
-		day = RFIFOW(fd,36);
-		hour = RFIFOW(fd,38);
-		minute = RFIFOW(fd,40);
-		second = RFIFOW(fd,42);
-	} else if (type == 8) {
-		sex = RFIFOB(fd, 32);
-	}
+	int timediff = 0;
+	if (type == 2 || type == 6 || type == 9)
+		timediff = RFIFOL(fd,32);
+	int val1 = RFIFOL(fd,36);
+//	int val2 = RFIFOL(fd,40);
 	RFIFOSKIP(fd,44);
 
 	SQL->EscapeStringLen(inter->sql_handle, esc_name, name, strnlen(name, NAME_LENGTH));
@@ -3590,7 +3569,7 @@ void char_parse_frommap_change_account(int fd)
 				loginif->block_account(account_id, 5);
 				break;
 			case CHAR_ASK_NAME_BAN:
-				loginif->ban_account(account_id, year, month, day, hour, minute, second);
+				loginif->ban_account(account_id, timediff);
 				break;
 			case CHAR_ASK_NAME_UNBLOCK:
 				loginif->block_account(account_id, 0);
@@ -3603,13 +3582,16 @@ void char_parse_frommap_change_account(int fd)
 				break;
 			case CHAR_ASK_NAME_CHARBAN:
 				/* handled by char server, so no redirection */
-				chr->ban(account_id, char_id, &unban_time, year, month, day, hour, minute, second);
+				chr->ban(account_id, char_id, &unban_time, timediff);
 				break;
 			case CHAR_ASK_NAME_CHARUNBAN:
 				chr->unban(char_id, &result);
 				break;
 			case CHAR_ASK_NAME_CHANGECHARSEX:
-				result = chr->changecharsex(char_id, sex);
+				result = chr->changecharsex(char_id, val1);
+				break;
+			case CHAR_ASK_NAME_VIP:
+				result = chr->parse_fromlogin_reqvipdata(acc, val1, timediff);
 				break;
 			}
 		}
@@ -4109,11 +4091,6 @@ int char_parse_frommap(int fd)
 			{
 				chr->parse_frommap_save_status_change_data(fd);
 			}
-			break;
-
-			case 0x2b2c:
-				if (RFIFOREST(fd) < 11) return 0;
-				chr->parse_frommap_vipactive(fd);
 			break;
 
 			case 0x2b23: // map-server alive packet
@@ -6651,7 +6628,6 @@ void char_defaults(void)
 	chr->parse_frommap_request_stats_report = char_parse_frommap_request_stats_report;
 	chr->parse_frommap_scdata_update = char_parse_frommap_scdata_update;
 	chr->parse_frommap_scdata_delete = char_parse_frommap_scdata_delete;
-	chr->parse_frommap_vipactive = char_parse_frommap_vipactive;
 	chr->parse_frommap_vipack = char_parse_frommap_vipack;
 	chr->parse_frommap = char_parse_frommap;
 	chr->search_mapserver = char_search_mapserver;

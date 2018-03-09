@@ -620,8 +620,8 @@ END_ZEROED_BLOCK;
 
 #ifdef VIP_ENABLE
 	struct {
-		unsigned int enabled;
-		unsigned int time;
+		unsigned int enabled : 1;
+		time_t time;
 	} vip;
 #endif
 };

@@ -114,19 +114,14 @@ void loginif_block_account(int account_id, int flag)
 	WFIFOSET(chr->login_fd,10);
 }
 
-void loginif_ban_account(int account_id, short year, short month, short day, short hour, short minute, short second)
+void loginif_ban_account(int account_id, int timediff)
 {
 	Assert_retv(chr->login_fd != -1);
 	WFIFOHEAD(chr->login_fd,18);
 	WFIFOW(chr->login_fd, 0) = 0x2725;
 	WFIFOL(chr->login_fd, 2) = account_id;
-	WFIFOW(chr->login_fd, 6) = year;
-	WFIFOW(chr->login_fd, 8) = month;
-	WFIFOW(chr->login_fd,10) = day;
-	WFIFOW(chr->login_fd,12) = hour;
-	WFIFOW(chr->login_fd,14) = minute;
-	WFIFOW(chr->login_fd,16) = second;
-	WFIFOSET(chr->login_fd,18);
+	WFIFOL(chr->login_fd, 6) = timediff;
+	WFIFOSET(chr->login_fd,10);
 }
 
 void loginif_unban_account(int account_id)

@@ -23964,7 +23964,7 @@ BUILDIN(clan_master)
 	return true;
 }
 
-BUILDIN_FUNC(getserverdef) {
+BUILDIN(getserverdef) {
 	int type = script_getnum(st,2);
 	switch(type){
 		case 0: script_pushint(st,PACKETVER); break;
@@ -23994,7 +23994,7 @@ BUILDIN_FUNC(getserverdef) {
 BUILDIN(vip_status) {
 #ifdef VIP_ENABLE
 	TBL_PC *sd;
-	char *vip_str = (char *)aMalloc(24*sizeof(char));
+	char vip_str[26];
 	time_t now = time(NULL);
 	int type = script_getnum(st, 2);
 
@@ -24012,19 +24012,20 @@ BUILDIN(vip_status) {
 			break;
 		case 2: // Get VIP expire date.
 			if (pc_isvip(sd)) {
-				time_t viptime = (time_t)sd->vip.time;
+				time_t viptime = sd->vip.time;
 				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime));
-				vip_str[24] = '\0';
-				script_pushstr(st, vip_str);
+				vip_str[25] = '\0';
+				script_pushstrcopy(st, vip_str);
 			} else
 				script_pushint(st, 0);
 			break;
 		case 3: // Get remaining time.
 			if (pc_isvip(sd)) {
-				time_t viptime = (time_t)sd->vip.time;
-				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime - now));
-				vip_str[24] = '\0';
-				script_pushstr(st, vip_str);
+				time_t viptime_remain = sd->vip.time - now;
+				int year=0,month=0,day=0,hour=0,min=0,sec=0;
+				timer->split_time((int)viptime_remain,&year,&month,&day,&hour,&min,&sec);
+				safesnprintf(vip_str,sizeof(vip_str),"%d-%d-%d %d:%d",year,month,day,hour,min);
+				script_pushstrcopy(st, vip_str);
 			} else
 				script_pushint(st, 0);
 			break;
@@ -24034,15 +24035,16 @@ BUILDIN(vip_status) {
 #endif
 	return 0;
 }
+
 #ifdef VIP_ENABLE
 /* Adds or removes VIP time in minutes.
- * vip_time <time>,{"<character name>"};
+ * vip_time <time in mn>,{"<character name>"};
  * If time < 0 remove time, else add time.
  * Note: VIP System needs to be enabled.
  */
 BUILDIN(vip_time) {
 	TBL_PC *sd;
-	int time = script_getnum(st, 2) * 60; // Convert since it's given in minutes.
+	int viptime = script_getnum(st, 2) * 60; // Convert since it's given in minutes.
 
 	if (script_hasdata(st, 3))
 		sd = map->nick2sd(script_getstr(st, 3));
@@ -24052,7 +24054,7 @@ BUILDIN(vip_time) {
 	if (sd == NULL)
 		return 0;
 
-	chrif->req_vipActive(sd, time, 2);
+	chrif->char_ask_name(sd->status.account_id, sd->status.name, CHAR_ASK_NAME_VIP, viptime, 7, 0);
 
 	return 0;
 }

@@ -181,7 +181,7 @@ struct char_interface {
 	void (*parse_fromlogin_update_ip) (int fd);
 	void (*parse_fromlogin_accinfo2_failed) (int fd);
 	void (*parse_fromlogin_accinfo2_ok) (int fd);
-	int (*parse_fromlogin_reqvipdata) (int account_id, uint8 type, uint32 add_vip_time);
+	int (*parse_fromlogin_reqvipdata) (int account_id, uint8 type, int add_vip_time);
 	int (*parse_fromlogin_vipack) (int fd);
 	int (*parse_fromlogin) (int fd);
 	int (*request_accreg2) (int account_id, int char_id);
@@ -211,7 +211,7 @@ struct char_interface {
 	void (*char_name_ack) (int fd, int char_id);
 	void (*parse_frommap_char_name_request) (int fd);
 	void (*parse_frommap_change_email) (int fd);
-	void (*ban) (int account_id, int char_id, time_t *unban_time, short year, short month, short day, short hour, short minute, short second);
+	void (*ban) (int account_id, int char_id, time_t *unban_time, time_t timediff);
 	void (*unban) (int char_id, int *result);
 	void (*ask_name_ack) (int fd, int acc, const char* name, int type, int result);
 	int (*changecharsex) (int char_id, int sex);
@@ -234,7 +234,6 @@ struct char_interface {
 	void (*parse_frommap_scdata_update) (int fd);
 	void (*parse_frommap_scdata_delete) (int fd);
 	int (*parse_frommap_vipack) (int account_id, uint32 vip_time, uint8 isvip, uint32 group_id);
-	int (*parse_frommap_vipactive) (int fd);
 	int (*parse_frommap) (int fd);
 	int (*search_mapserver) (unsigned short map, uint32 ip, uint16 port);
 	int (*mapif_init) (int fd);

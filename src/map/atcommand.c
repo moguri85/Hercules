@@ -2816,7 +2816,7 @@ ACMD(char_block)
 		return false;
 	}
 
-	chrif->char_ask_name(sd->status.account_id, atcmd_player_name, CHAR_ASK_NAME_BLOCK, 0, 0, 0, 0, 0, 0);
+	chrif->char_ask_name(sd->status.account_id, atcmd_player_name, CHAR_ASK_NAME_BLOCK, 0, 0, 0);
 	clif->message(fd, msg_fd(fd,88)); // Character name sent to char-server to ask it.
 
 	return true;
@@ -2913,7 +2913,7 @@ ACMD(char_ban)
 	}
 
 	chrif->char_ask_name(sd->status.account_id, atcmd_player_name,
-	                     !strcmpi(info->command,"charban") ? CHAR_ASK_NAME_CHARBAN : CHAR_ASK_NAME_BAN, year, month, day, hour, minute, second);
+	                     !strcmpi(info->command,"charban") ? CHAR_ASK_NAME_CHARBAN : CHAR_ASK_NAME_BAN, timestamp, 0, 0);
 	clif->message(fd, msg_fd(fd,88)); // Character name sent to char-server to ask it.
 
 	return true;
@@ -2932,7 +2932,7 @@ ACMD(char_unblock)
 	}
 
 	// send answer to login server via char-server
-	chrif->char_ask_name(sd->status.account_id, atcmd_player_name, CHAR_ASK_NAME_UNBLOCK, 0, 0, 0, 0, 0, 0);
+	chrif->char_ask_name(sd->status.account_id, atcmd_player_name, CHAR_ASK_NAME_UNBLOCK, 0, 0, 0);
 	clif->message(fd, msg_fd(fd,88)); // Character name sent to char-server to ask it.
 
 	return true;
@@ -2952,7 +2952,7 @@ ACMD(char_unban)
 
 	// send answer to login server via char-server
 	chrif->char_ask_name(sd->status.account_id, atcmd_player_name,
-	                     !strcmpi(info->command,"charunban") ? CHAR_ASK_NAME_CHARUNBAN : CHAR_ASK_NAME_UNBAN, 0, 0, 0, 0, 0, 0);
+	                     !strcmpi(info->command,"charunban") ? CHAR_ASK_NAME_CHARUNBAN : CHAR_ASK_NAME_UNBAN, 0, 0, 0);
 	clif->message(fd, msg_fd(fd,88)); // Character name sent to char-server to ask it.
 
 	return true;
@@ -9645,7 +9645,8 @@ ACMD(vip)
 {
 	struct map_session_data *pl_sd = NULL;
 	char * modif_p;
-	int viptime = 0;
+	int vipdifftime = 0;
+	time_t now = time(NULL);
 
 	if (!*message || sscanf(message, "%255s %23[^\n]",atcmd_output,atcmd_player_name) < 2) {
 		clif->message(fd, msg_fd(fd,700));	//Usage: @vip <time> <character name>
@@ -9655,8 +9656,8 @@ ACMD(vip)
 	atcmd_output[sizeof(atcmd_output)-1] = '\0';
 
 	modif_p = atcmd_output;
-	viptime = (int)timer->solve_time(modif_p)/60; // Change to minutes
-	if (viptime == 0) {
+	vipdifftime = (int)timer->solve_time(modif_p);
+	if (vipdifftime == 0) {
 		clif->message(fd, msg_fd(fd,701)); // Invalid time for vip command.
 		clif->message(fd, msg_fd(fd,702)); // Time parameter format is +/-<value> to alter. y/a = Year, m = Month, d/j = Day, h = Hour, n/mn = Minute, s = Second.
 		return -1;
@@ -9672,7 +9673,7 @@ ACMD(vip)
 		return -1;
 	}
 
-	if (viptime <= 0) {
+	if (pl_sd->vip.time <= now) {
 		pl_sd->vip.time = 0;
 		pl_sd->vip.enabled = 0;
 		clif->message(pl_sd->fd, msg_fd(fd,703)); // GM has removed your VIP time.
@@ -9680,10 +9681,11 @@ ACMD(vip)
 	} else {
 		int year,month,day,hour,minute,second;
 		char timestr[128];
-		pl_sd->vip.time += viptime;
-		timer->split_time(pl_sd->vip.time*60,&year,&month,&day,&hour,&minute,&second);
+
+		timer->split_time((int)(pl_sd->vip.time-now),&year,&month,&day,&hour,&minute,&second);
 		sprintf(atcmd_output,msg_fd(fd,705),year,month,day,hour,minute); // Your VIP status is valid for %d years, %d months, %d days, %d hours and %d minutes.
 		clif->message(pl_sd->fd, atcmd_output);
+
 		timer->timestamp2string(timestr,20,pl_sd->vip.time,"%Y-%m-%d %H:%M");
 		sprintf(atcmd_output,msg_fd(fd,707),timestr); // You are VIP until :%s
 		clif->message(pl_sd->fd, atcmd_output);
@@ -9695,8 +9697,7 @@ ACMD(vip)
 			clif->message(pl_sd->fd,atcmd_output);
 		}
 	}
-	chrif->req_vipActive(pl_sd, viptime, 3); //! FIXME, someone said, player will be kicked out after player get VIP status.
-
+	chrif->char_ask_name(pl_sd->status.account_id, pl_sd->status.name, CHAR_ASK_NAME_VIP, vipdifftime, 7, 0);
 	return 0;
 }
 #endif

@@ -549,31 +549,21 @@ void login_fromchar_parse_ban(int fd, int id, const char *const ip)
 	struct mmo_account acc;
 
 	int account_id = RFIFOL(fd,2);
-	int year = RFIFOW(fd,6);
-	int month = RFIFOW(fd,8);
-	int mday = RFIFOW(fd,10);
-	int hour = RFIFOW(fd,12);
-	int min = RFIFOW(fd,14);
-	int sec = RFIFOW(fd,16);
-	RFIFOSKIP(fd,18);
+	time_t timediff = RFIFOL(fd,6);
+	RFIFOSKIP(fd,10);
 
 	if (!accounts->load_num(accounts, &acc, account_id)) {
 		ShowNotice("Char-server '%s': Error of ban request (account: %d not found, ip: %s).\n", login->dbs->server[id].name, account_id, ip);
 	} else {
 		time_t timestamp;
-		struct tm *tmtime;
+		if (timediff > time(NULL))
+			timediff = timediff - time(NULL);
 		if (acc.unban_time == 0 || acc.unban_time < time(NULL))
 			timestamp = time(NULL); // new ban
 		else
 			timestamp = acc.unban_time; // add to existing ban
-		tmtime = localtime(&timestamp);
-		tmtime->tm_year += year;
-		tmtime->tm_mon  += month;
-		tmtime->tm_mday += mday;
-		tmtime->tm_hour += hour;
-		tmtime->tm_min  += min;
-		tmtime->tm_sec  += sec;
-		timestamp = mktime(tmtime);
+
+		timestamp += timediff;
 		if (timestamp == -1) {
 			ShowNotice("Char-server '%s': Error of ban request (account: %d, invalid date, ip: %s).\n", login->dbs->server[id].name, account_id, ip);
 		} else if( timestamp <= time(NULL) || timestamp == 0 ) {
@@ -899,7 +889,7 @@ int login_parse_fromchar(int fd)
 		break;
 
 		case 0x2725: // Receiving of map-server via char-server a ban request
-			if (RFIFOREST(fd) < 18)
+			if (RFIFOREST(fd) < 10)
 				return 0;
 		{
 			login->fromchar_parse_ban(fd, id, ip);
@@ -1209,6 +1199,10 @@ int login_mmo_auth(struct login_session_data* sd, bool isServer) {
 	acc.unban_time = 0;
 	acc.logincount++;
 
+#ifdef VIP_ENABLE
+	acc.vip_time = 0;
+	acc.old_group = 0;
+#endif
 	accounts->save(accounts, &acc);
 
 	if( sd->sex != 'S' && sd->account_id < START_ACCOUNT_NUM )
@@ -1364,14 +1358,13 @@ void login_auth_failed(struct login_session_data *sd, int result)
 
 int login_fromchar_sendvipdata(int fd, int id, const char *const ip, struct mmo_account acc, char isvip) {
 #ifdef VIP_ENABLE
-	uint8 buf[16];
-
-	WBUFW(buf,0) = 0x2743;
-	WBUFL(buf,2) = acc.account_id;
-	WBUFL(buf,6) = acc.vip_time;
-	WBUFB(buf,10) = isvip;
-	WBUFL(buf,11) = acc.group_id; //new group id
-	charif_sendallwos(-1,buf,15); //inform all char-servs of result
+	WFIFOHEAD(fd,19);
+	WFIFOW(fd,0) = 0x2743;
+	WFIFOL(fd,2) = acc.account_id;
+	WFIFOL(fd,6) = (int)acc.vip_time;
+	WFIFOB(fd,10) = isvip;
+	WFIFOL(fd,11) = acc.group_id; //new group id
+	WFIFOSET(fd,15);
 
 	login_fromchar_parse_account_data(fd, id, ip);
 #endif
@@ -1391,8 +1384,8 @@ int login_fromchar_parse_reqvipdata(int fd, int id, const char *const ip) {
 	struct mmo_account acc;
 	int aid = RFIFOL(fd,2);
 	int8 type = RFIFOB(fd,6);
-	uint32 req_duration = RFIFOL(fd,7);
-	RFIFOSKIP(fd,11);
+	int req_duration = RFIFOL(fd,7);
+	RFIFOSKIP(fd,15);
 
 	if( accounts->load_num(accounts, &acc, aid ) ){
 		time_t now = time(NULL);
@@ -1406,16 +1399,17 @@ int login_fromchar_parse_reqvipdata(int fd, int id, const char *const ip) {
 			acc.group_id = login->config->vip_group_id;
 			acc.char_slots = login->config->chars_per_account + login->config->vip_char_increase;
 			isvip = true;
-		} else if (vip_time) { //expired
+		} else if (vip_time) { //expired or @vip -xx
 			vip_time = 0;
-			acc.group_id = acc.old_group;
+			if(acc.group_id == login->config->vip_group_id)
+				acc.group_id = acc.old_group;
 			acc.old_group = 0;
 			acc.char_slots = login->config->chars_per_account;
 		}
-		acc.vip_time = (int)vip_time;
+		acc.vip_time = vip_time;
 		accounts->save(accounts,&acc);
 
-		login->fromchar_sendvipdata(fd, id, ip, acc, isvip);
+		if ( type&1 ) login->fromchar_sendvipdata(fd, id, ip, acc, isvip);
 	}
 #endif
 	return 1;

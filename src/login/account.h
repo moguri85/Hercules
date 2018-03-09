@@ -53,7 +53,7 @@ struct mmo_account
 	char birthdate[10+1];       // assigned birth date (format: YYYY-MM-DD, default: 0000-00-00)
 #ifdef VIP_ENABLE
 	int old_group;
-	int vip_time;
+	time_t vip_time;
 #endif
 };
 

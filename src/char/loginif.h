@@ -36,7 +36,7 @@ struct loginif_interface {
 	void (*on_disconnect) (void);
 	void (*on_ready) (void);
 	void (*block_account) (int account_id, int flag);
-	void (*ban_account) (int account_id, short year, short month, short day, short hour, short minute, short second);
+	void (*ban_account) (int account_id, int timediff);
 	void (*unban_account) (int account_id);
 	void (*changesex) (int account_id);
 	void (*auth) (int fd, struct char_session_data* sd, uint32 ipl);

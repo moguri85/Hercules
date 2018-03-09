@@ -109,7 +109,7 @@ struct chrif_interface {
 
 	bool (*searchcharid) (int char_id);
 	bool (*changeemail) (int id, const char *actual_email, const char *new_email);
-	bool (*char_ask_name) (int acc, const char* character_name, unsigned short operation_type, int year, int month, int day, int hour, int minute, int second);
+	bool (*char_ask_name) (int acc, const char* character_name, unsigned short operation_type, time_t timediff, int val1, int val2);
 	int (*updatefamelist) (struct map_session_data *sd);
 	bool (*buildfamelist) (void);
 	bool (*save_scdata) (struct map_session_data *sd);
@@ -166,7 +166,6 @@ struct chrif_interface {
 	void (*del_scdata_single) (int account_id, int char_id, short type);
 
 	void (*parse_ack_vipActive) (int fd);
-	int (*req_vipActive) (struct map_session_data *sd, int8 req_duration, int8 type);
 };
 
 #ifdef HERCULES_CORE

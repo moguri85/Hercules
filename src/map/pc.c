@@ -1535,9 +1535,14 @@ int pc_reg_received(struct map_session_data *sd)
 	intif->request_account_storage(sd);
 
 	intif->Mail_requestinbox(sd->status.char_id, 0); // MAIL SYSTEM - Request Mail Inbox
-	chrif->req_vipActive(sd, 0, 1); // Request VIP Information
 	intif->request_questlog(sd);
 	intif->rodex_checkhasnew(sd);
+
+#ifdef VIP_ENABLE
+	sd->vip.time = 0;
+	sd->vip.enabled = 0;
+	chrif->char_ask_name(sd->status.account_id, sd->status.name, CHAR_ASK_NAME_VIP, 0, 1, 0); // Request VIP Information
+#endif
 
 	if (sd->state.connect_new == 0 && sd->fd) { //Character already loaded map! Gotta trigger LoadEndAck manually.
 		sd->state.connect_new = 1;

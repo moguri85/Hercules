@@ -1241,6 +1241,7 @@ enum zh_char_ask_name_type {
 	CHAR_ASK_NAME_CHARBAN       = 6, // character ban
 	CHAR_ASK_NAME_CHARUNBAN     = 7, // character unban
 	CHAR_ASK_NAME_CHANGECHARSEX = 8, // change character sex
+	CHAR_ASK_NAME_VIP           = 9, // change vip time
 };
 
 /**
