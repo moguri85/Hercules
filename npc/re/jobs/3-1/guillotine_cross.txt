@@ -31,7 +31,7 @@
 //================= Description ===========================================
 //= Job change Quest from Assassin / Assassin Cross -> Guillotine Cross.
 //================= Current Version =======================================
-//= 1.5
+//= 1.6
 //=========================================================================
 
 que_job01,75,96,3	script	Guild Member#3rdgc01	4_M_MOCASS1,{
@@ -117,6 +117,12 @@ que_job01,75,96,3	script	Guild Member#3rdgc01	4_M_MOCASS1,{
 		next;
 		switch(select("I'll do it.", "Give me time to think.")) {
 		case 1:
+					if (getserverdef(VAR_VIP_SCRIPT)) {
+						callfunc "VIP_Third_Class";
+						set job_3rd_gc, 3;
+						setquest 7101;
+						next;
+					}
 			mes "[Ahcart]";
 			mes "Ok, to Veins.";
 			mes "I'll contact them.";
@@ -145,6 +151,12 @@ que_job01,75,96,3	script	Guild Member#3rdgc01	4_M_MOCASS1,{
 		next;
 		switch(select("I'll do it.", "I'm not ready.")) {
 		case 1:
+			if (getserverdef(VAR_VIP_SCRIPT)) {
+				callfunc "VIP_Third_Class";
+				set job_3rd_gc, 3;
+				setquest 7101;
+				next;
+			}		
 			mes "[Ahcart]";
 			mes "Ok, to Veins.";
 			mes "I'll contact them.";

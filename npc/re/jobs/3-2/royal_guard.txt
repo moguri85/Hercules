@@ -31,7 +31,7 @@
 //================= Description ===========================================
 //= Job change Quest from Crusader / Paladin -> Royal Guard.
 //================= Current Version =======================================
-//= 1.2
+//= 1.3
 //=========================================================================
 
 prt_castle,48,161,3	script	Middle-aged Gentleman#rg	1_M_LIBRARYMASTER,{
@@ -128,6 +128,12 @@ prt_castle,48,161,3	script	Middle-aged Gentleman#rg	1_M_LIBRARYMASTER,{
 		next;
 		switch(select("I want to know more.", "Stop talking.")) {
 		case 1:
+			if (getserverdef(VAR_VIP_SCRIPT)) {
+				callfunc "VIP_Third_Class";
+				set job_min,1;
+				setquest 11135;
+				next;
+			}
 			mes "[Heinrich]";
 			mes "You are impetuous.";
 			next;

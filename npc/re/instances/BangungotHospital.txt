@@ -30,7 +30,7 @@
 //= Save the hospital in Port Malaya from Bangungot.
 //= Part of the "Nurse in Port Malaya" quest.
 //================= Current Version =======================================
-//= 1.1
+//= 1.2
 //=========================================================================
 
 //== Instance Creation =====================================
@@ -176,10 +176,10 @@ ma_dun01,147,10,5	script	Nurse#ma_dun01	4_F_NURSE,{
 					erasequest 9224;
 					setquest 9223;
 					getexp 500000,0;
-//					if (IsPremiumPcCafe == 10)
+					if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 						getitem Ancient_Grudge,7;
-//					else
-//						getitem Ancient_Grudge,5;
+					else
+						getitem Ancient_Grudge,5;
 					close2;
 					cutin "",255;
 					end;

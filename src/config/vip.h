@@ -44,6 +44,12 @@
 	#define MAX_CHAR_VIP 0
 #endif
 
-#define VIP_SCRIPT 0 //enable or disable scripts (require vip_enable)
+
+/// Enable VIP script changes? (requires VIP_ENABLE)
+/// The primary effects of this are restrictions on non-VIP players, such as requiring
+/// a Reset Stone to change into third classes, paying more for equipment upgrades, and
+/// so forth. Note that the changes are based on euRO, not iRO.
+#define VIP_SCRIPT 0
+
 
 #endif // CONFIG_RENEWAL_H

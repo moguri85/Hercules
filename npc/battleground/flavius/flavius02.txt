@@ -30,10 +30,10 @@
 // BattleGround System - Flavius Second
 //================= Description ===========================================
 //= Flavius Battleground.
-//= - Winning Team: 9 badges
-//= - Losing Team: 3 badge
+//= - Winning Team: 9 badges (11 if VIP)
+//= - Losing Team: 3 badges (5 if VIP)
 //================= Current Version =======================================
-//= 1.6
+//= 1.7
 //=========================================================================
 
 //== Waiting Room NPCs =====================================
@@ -406,46 +406,10 @@ OnTouch:
 
 bat_b02,10,294,3	script	Guillaume Vintenar#b02_a	4_M_RASWORD,{
 	if ($@FlaviusBG2_id1 == getcharid(CHAR_ID_BG)) {
-		if ($@FlaviusBG2_Victory == 1) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 8) {
-				mes("[Axl Rose]");
-				mes("Blessed Guillaume!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,9;
-			}
-			else {
-				mes("[Axl Rose]");
-				mes("Blessed Guillaume!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
+		if ($@FlaviusBG2_Victory == 1)
+			callfunc "F_BG_Badge",1,"Guillaume","Flavius";
+		else
+			callfunc "F_BG_Badge",0,"Guillaume","Flavius";		
 	}
 	bg_leave;
 	warp "bat_room",154,150;
@@ -458,46 +422,10 @@ OnInit:
 
 bat_b02,389,14,3	script	Croix Vintenar#b02_b	4_M_RASWORD,{
 	if ($@FlaviusBG2_id2 == getcharid(CHAR_ID_BG)) {
-		if ($@FlaviusBG2_Victory == 2) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 8) {
-				mes("[Swandery]");
-				mes("Blessed Croix!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,9;
-			}
-			else {
-				mes("[Swandery]");
-				mes("Blessed Croix!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
+		if ($@FlaviusBG2_Victory == 2)
+			callfunc "F_BG_Badge",1,"Croix","Flavius";
+		else
+			callfunc "F_BG_Badge",0,"Croix","Flavius";	
 	}
 	bg_leave;
 	warp "bat_room",154,150;
@@ -591,66 +519,12 @@ bat_b02,389,16,3	script	Croix Camp#flag42	1_FLAG_EAGLE,{ end; }
 bat_b02,10,294,3	script	Vintenar#bat_b02_aover	4_M_KY_HEAD,{
 	.@A_B_gap = $@Guill_ScoreBG2 - $@Croix_ScoreBG2;
 	if ($@FlaviusBG2_id1 == getcharid(CHAR_ID_BG)) {
-		if (.@A_B_gap > 0) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 8) {
-				mes("[Axl Rose]");
-				mes("Blessed Guillaume!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,9;
-			}
-			else {
-				mes("[Axl Rose]");
-				mes("Blessed Guillaume!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else if (.@A_B_gap == 0) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Axl Rose]");
-				mes("You lost, but you're dedicated to this battle.");
-				mes("This is a reward for your great dedication by Guillaume Marollo!");
-				mes("Just take this defeat as a lesson, next time you will definitely win.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
+		if (.@A_B_gap > 0)
+			callfunc "F_BG_Badge",1,"Guillaume","Flavius";
+		else if (.@A_B_gap == 0)
+			callfunc "F_BG_Badge",0,"Guillaume","Flavius";
+		else
+			callfunc "F_BG_Badge",0,"Guillaume","Flavius";
 	}
 	else {
 		mes("[Axl Rose]");
@@ -669,66 +543,12 @@ OnInit:
 bat_b02,389,14,3	script	Vintenar#bat_b02_bover	4_M_CRU_HEAD,{
 	.@A_B_gap = $@Guill_ScoreBG2 - $@Croix_ScoreBG2;
 	if ($@FlaviusBG2_id2 == getcharid(CHAR_ID_BG)) {
-		if (.@A_B_gap > 0) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else if (.@A_B_gap == 0) {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 2) {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,3;
-			}
-			else {
-				mes("[Swandery]");
-				mesf("Oh, %s. Don't be sad.", strcharinfo(PC_NAME));
-				mes("Even though we didn't win, we did our best.");
-				mes("This is a Royal gift from Croix, and please don't forget this battle. We will win the next one.");
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
-		else {
-			.@your_medal = countitem(BF_Badge2);
-			.@medal_gap = 500 - .@your_medal;
-			if (.@medal_gap > 8) {
-				mes("[Swandery]");
-				mes("Blessed Croix!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,9;
-			}
-			else {
-				mes("[Swandery]");
-				mes("Blessed Croix!");
-				mes("Let's enjoy our glorious victory!");
-				mesf("%s, it's a sign reflecting victory.", strcharinfo(PC_NAME));
-				close2;
-				getitem BF_Badge2,.@medal_gap;
-			}
-		}
+		if (.@A_B_gap > 0)
+			callfunc "F_BG_Badge",1,"Croix","Flavius";
+		else if (.@A_B_gap == 0)
+			callfunc "F_BG_Badge",0,"Croix","Flavius";
+		else
+			callfunc "F_BG_Badge",1,"Croix","Flavius";
 	}
 	else {
 		mes("[Swandery]");

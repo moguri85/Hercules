@@ -33,7 +33,7 @@
 //================= Description ===========================================
 //= Job change Quest from Wizard / High Wizard -> Warlock.
 //================= Current Version =======================================
-//= 1.4
+//= 1.5
 //=========================================================================
 
 -	script	#distorted_space_	FAKE_NPC,{
@@ -176,6 +176,12 @@ function	script	F_Warlock	{
 			next;
 			switch(select("What do I need to do?", "Cancel.")) {
 			case 1:
+				if (getserverdef(VAR_VIP_SCRIPT)) {
+					callfunc "VIP_Third_Class";
+					set job_wl,2;
+					setquest 11106;
+					next;
+				}
 				mes "[Master Egnoloria]";
 				mes "Are you serious?";
 				mes "You hunger for power don't you human.";
@@ -594,6 +600,12 @@ spl_in02,80,108,5	script	Guild Master#Warlock	4_F_FAIRY1,{
 		next;
 		switch(select("How can I be a Warlock?", "Cancel.")) {
 		case 1:
+			if (getserverdef(VAR_VIP_SCRIPT)) {
+				callfunc "VIP_Third_Class";
+				set job_wl,2;
+				setquest 11106;
+				next;
+			}		
 			mes "[Master Egnoloria]";
 			mes "Are you serious?";
 			mes "You hunger for power don't you human.";

@@ -50,7 +50,7 @@
 //================= Description ===========================================
 //= Refining NPCs and Metal Salesmen.
 //================= Current Version =======================================
-//= 3.3.2
+//= 3.4
 //=========================================================================
 
 //== Christopher: Geffen Blacksmith ========================
@@ -670,6 +670,19 @@ function	script	refinemain	{
 		.@safe = 4;
 		break;
 	}
+
+	// If the VIP system is enabled, the prices for non-VIP players are considerably higher.
+	if (getserverdef(VAR_VIP_SCRIPT) && !vip_status(1)) {
+		switch(getequipweaponlv(.@part)) {
+			case 0: set .@price, .@price * 10; break;
+			case 1: set .@price, .@price * 40; break;
+			case 2: set .@price, .@price * 50; break;
+			case 3: set .@price, .@price * 2; break;
+			case 4: set .@price, .@price * 2; break;
+			case 5: set .@price, .@price * 10; break;
+		}
+	}
+
 	if(.@features != 1) {
 		mes "[" + getarg(0) + "]";
 		mes "To refine this I need";

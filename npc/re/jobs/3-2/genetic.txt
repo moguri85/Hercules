@@ -34,7 +34,7 @@
 //================= Description ===========================================
 //= Job change Quest from Alchemist / Creator -> Genetic.
 //================= Current Version =======================================
-//= 1.3a
+//= 1.4
 //=========================================================================
 
 alde_alche,35,186,5	script	Alchemist Union Member	1_M_SIGNALCHE,{
@@ -72,6 +72,12 @@ alde_alche,35,186,5	script	Alchemist Union Member	1_M_SIGNALCHE,{
 				next;
 				switch(select("Of course, I want to meet a Geneticist.", "I don't want to meet a Geneticist.")) {
 				case 1:
+					if (getserverdef(VAR_VIP_SCRIPT)) {
+						callfunc "VIP_Third_Class";
+						set job_gen,1;
+						setquest 2215;
+						next;
+					}				
 					mes "[Alchemist Union Member]";
 					mes "Wise choice!";
 					mes "The infamous Geneticist 'Devries'.";

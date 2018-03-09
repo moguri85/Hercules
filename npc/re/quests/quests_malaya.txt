@@ -161,10 +161,10 @@ malaya,266,76,3	script	Rodel the Guard#malaya	4_MAL_SOLDIER,4,4,{
 				next;
 				mes "[Rodel the Guard]";
 				mes "I think there will be more Jejeling hunts in the future. Please join us again next time.";
-//				if (IsPremiumPcCafe == 10)
+				if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 					getitem Lesser_Agimat, 2; // Lesser_Agimat
-//				else
-//					getitem Lesser_Agimat, 1; // Lesser_Agimat
+				else
+					getitem Lesser_Agimat, 1; // Lesser_Agimat
 				getexp 200000,200000;
 				erasequest 7404;
 				setquest 7405;
@@ -714,10 +714,10 @@ malaya,169,350,5	script	Imelda#malaya	4_M_BRZ_JACI,{
 		erasequest 7374;
 		erasequest 7379;
 		setquest 7375;
-//		if (IsPremiumPcCafe == 10)
+		if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 			getitem Lesser_Agimat, 2; // Lesser_Agimat
-//		else
-//			getitem Lesser_Agimat, 1; // Lesser_Agimat
+		else
+			getitem Lesser_Agimat, 1; // Lesser_Agimat
 		getexp 200000,200000;
 		if (rand(2))
 			$malayaNames$[0] = strcharinfo(PC_NAME);
@@ -752,10 +752,10 @@ malaya,169,350,5	script	Imelda#malaya	4_M_BRZ_JACI,{
 				delitem Silver_Cross, 6; // Silver_Cross
 				erasequest 7380;
 				setquest 7381;
-//				if (IsPremiumPcCafe == 10)
+				if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 					getitem Lesser_Agimat, 2; // Lesser_Agimat
-//				else
-//					getitem Lesser_Agimat, 1; // Lesser_Agimat
+				else
+					getitem Lesser_Agimat, 1; // Lesser_Agimat
 				getexp 200000,200000;
 				close;
 			} else {
@@ -820,10 +820,10 @@ malaya,169,350,5	script	Imelda#malaya	4_M_BRZ_JACI,{
 				setquest 7375;
 				erasequest 7374;
 				erasequest 7379;
-//				if (IsPremiumPcCafe == 10)
+				if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 					getitem Lesser_Agimat, 2; // Lesser_Agimat
-//				else
-//					getitem Lesser_Agimat, 1; // Lesser_Agimat
+				else
+					getitem Lesser_Agimat, 1; // Lesser_Agimat
 				getexp 200000,200000;
 				if (rand(2))
 					$malayaNames$[0] = strcharinfo(PC_NAME);
@@ -1123,10 +1123,10 @@ malaya,181,353,5	script	Old Man Nardo#malaya	4_M_BARYO_OLD,{
 					delitem Soul_Protection, 5; // Soul_Protection
 					setquest 7378;
 					erasequest 7377;
-//					if (IsPremiumPcCafe == 10)
+					if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 						getitem Lesser_Agimat, 2; // Lesser_Agimat
-//					else
-//						getitem Lesser_Agimat, 1; // Lesser_Agimat
+					else
+						getitem Lesser_Agimat, 1; // Lesser_Agimat
 					getexp 200000,200000;
 					if (!rand(3))
 						$malayaNames$[2] = strcharinfo(PC_NAME);
@@ -1740,10 +1740,10 @@ malaya,295,171,3	script	Collection Dealer Woeon	4_M_MALAYA,{
 					delitem Jejellopy, countitem(Jejellopy);
 					setquest 7392;
 					erasequest 7391;
-//					if (IsPremiumPcCafe == 10)
+					if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 						getitem Lesser_Agimat, 2; // Lesser_Agimat
-//					else
-//						getitem Lesser_Agimat, 1; // Lesser_Agimat
+					else
+						getitem Lesser_Agimat, 1; // Lesser_Agimat
 					getexp 200000,200000;
 					.@memo_name = rand(1,3);
 					if (!rand(3))
@@ -1975,10 +1975,10 @@ malaya,119,217,3	script	Blacksmith Pandoi	4_M_DEWBOY,{
 				delitem Silver_Bracelet, 10;
 				setquest 7394;
 				erasequest 7393;
-//				if (IsPremiumPcCafe == 10)
+				if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 					getitem Lesser_Agimat, 2; // Lesser_Agimat
-//				else
-//					getitem Lesser_Agimat, 1; // Lesser_Agimat
+				else
+					getitem Lesser_Agimat, 1; // Lesser_Agimat
 				getexp 200000,200000;
 				if (!rand(3))
 					$malayaNames$[1] = strcharinfo(PC_NAME);
@@ -2388,10 +2388,10 @@ malaya,326,68,2	script	Pedro the Sailor	4W_SAILOR,{
 			malaya_diwata = 6;
 			erasequest 7399;
 			setquest 7401;
-//			if (IsPremiumPcCafe == 10)
+			if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 				getitem Lesser_Agimat, 2; // Lesser_Agimat
-//			else
-//				getitem Lesser_Agimat, 1; // Lesser_Agimat
+			else
+				getitem Lesser_Agimat, 1; // Lesser_Agimat
 			getexp 200000,200000;
 			if (!rand(3))
 				$malayaNames$[0] = strcharinfo(PC_NAME);
@@ -2449,10 +2449,10 @@ malaya,326,68,2	script	Pedro the Sailor	4W_SAILOR,{
 					mes "I think you kind of like doing it.";
 					setquest 7401;
 					erasequest 7403;
-//					if (IsPremiumPcCafe == 10)
+					if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 						getitem Lesser_Agimat, 2; // Lesser_Agimat
-//					else
-//						getitem Lesser_Agimat, 1; // Lesser_Agimat
+					else
+						getitem Lesser_Agimat, 1; // Lesser_Agimat
 					getexp 200000,200000;
 					if (!rand(3))
 						$malayaNames$[0] = strcharinfo(PC_NAME);
@@ -2939,10 +2939,10 @@ ma_fild01,239,253,3	script	Dhong the Guard	4_MAL_SOLDIER,{
 				delitem Purified_Bone, 10; // Purified_Bone
 				setquest 7408;
 				erasequest 7407;
-//				if (IsPremiumPcCafe == 10)
+				if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 					getitem Lesser_Agimat, 2; // Lesser_Agimat
-//				else
-//					getitem Lesser_Agimat, 1; // Lesser_Agimat
+				else
+					getitem Lesser_Agimat, 1; // Lesser_Agimat
 				getexp 200000,200000;
 				if (!rand(0, 2))
 					$malayaNames$[2] = strcharinfo(PC_NAME);
@@ -3035,10 +3035,10 @@ ma_fild01,200,190,3	script	Maries#malaya	4_F_BARYO_WOMAN,{
 			mes "Thank you for delivering those precious shirts to my children.";
 			setquest 7390;
 			erasequest 7389;
-//			if (IsPremiumPcCafe == 10)
+			if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 				getitem Lesser_Agimat, 2; // Lesser_Agimat
-//			else
-//				getitem Lesser_Agimat, 1; // Lesser_Agimat
+			else
+				getitem Lesser_Agimat, 1; // Lesser_Agimat
 			getexp 200000,200000;
 			if (!rand(3))
 				$malayaNames$[2] = strcharinfo(PC_NAME);
@@ -3274,10 +3274,10 @@ ma_fild02,241,39,5	script	Good Capre Budidai	4_MAL_BUDIDAI,{
 					mes "This is a blessing for friends. Hey hey hey~";
 					setquest 7410;
 					erasequest 7409;
-//					if (IsPremiumPcCafe == 10)
+					if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 						getitem Lesser_Agimat, 2; // Lesser_Agimat
-//					else
-//						getitem Lesser_Agimat, 1; // Lesser_Agimat
+					else
+						getitem Lesser_Agimat, 1; // Lesser_Agimat
 					getexp 200000,200000;
 					if (!rand(3))
 						$malayaNames$[1] = strcharinfo(PC_NAME);
@@ -4244,10 +4244,6 @@ ma_in01,47,101,3	script	Totoy#buwaya	4_M_BARYO_BOY,7,7,{
 		setquest 2279;
 		close;
 	} else if (malaya_buwaya == 13) {
-//		if (IsPremiumPcCafe == 10)
-			.@amount = 10;
-//		else
-//			.@amount = 5;
 		if (checkweight(Knife,1) == 0 || MaxWeight - Weight < 2000) {
 			mes "- Wait!! -";
 			mes "- You have too many items on you. -";
@@ -4272,7 +4268,10 @@ ma_in01,47,101,3	script	Totoy#buwaya	4_M_BARYO_BOY,7,7,{
 		mes "[Dog]";
 		mes "Woof woof woof!!!!";
 		malaya_buwaya = 14;
-		getitem Lesser_Agimat,5;
+		if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
+			getitem Lesser_Agimat,10;
+		else
+			getitem Lesser_Agimat,5;
 		disablenpc "Dog#buwaya_totoi";
 		erasequest 2279;
 		setquest 2280;
@@ -4704,10 +4703,6 @@ malaya,290,340,3	script	Guard Leader#buwaya	4_MAL_CAPTAIN,{
 			mes "There is no shame in rejecting this request.";
 			erasequest 2281;
 		} else if (.@hunting == 2) {
-//			if (IsPremiumPcCafe == 10)
-				.@amount = 10;
-//			else
-//				.@amount = 5;
 			mes "[Guard Leader]";
 			mes "Can't believe you really got rid of Buwaya!";
 			mes "You aren't just any ordinary youth, aren't you? People of Port Malaya can now sleep at night.";
@@ -4715,7 +4710,10 @@ malaya,290,340,3	script	Guard Leader#buwaya	4_MAL_CAPTAIN,{
 			mes "[Guard Leader]";
 			mes "Good work.";
 			erasequest 2281;
-			getitem Lesser_Agimat, .@amount;
+			if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
+				getitem Lesser_Agimat, 10;
+			else
+				getitem Lesser_Agimat, 5;
 			getexp 0,600000;
 		} else {
 			mes "[Guard Leader]";
@@ -5236,10 +5234,10 @@ malaya,285,332,4	script	Old Legend Teller#bako1	4_M_BARYO_OLD,{
 			mes "Please get rid of this monster for us.";
 			erasequest 1179;
 			malaya_bakona1 = 7;
-//			if (IsPremiumPcCafe == 10)
+			if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 				getitem Ancient_Grudge,5;
-//			else
-//				getitem Ancient_Grudge,3;
+			else
+				getitem Ancient_Grudge,3;
 			getexp 500000,200000;
 			close;
 		}
@@ -5756,10 +5754,10 @@ malaya,283,265,4	script	Village Chief#bako2	4_BARYO_CHIEF,{
 		erasequest 1184;
 		setquest 1185;
 		malaya_bakona2 = 6;
-//		if (IsPremiumPcCafe == 10)
+		if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 			getitem Insideout_Shirt,7;
-//		else
-//			getitem Insideout_Shirt,5;
+		else
+			getitem Insideout_Shirt,5;
 		close;
 	} else if (malaya_bakona2 == 6) {
 		mes "[Village Chief]";
@@ -5862,10 +5860,10 @@ malaya,283,265,4	script	Village Chief#bako2	4_BARYO_CHIEF,{
 		erasequest 1193;
 		malaya_bakona2 = 15;
 		getexp 1000000,600000;
-//		if (IsPremiumPcCafe == 10)
+		if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 			getitem Lesser_Agimat,7;
-//		else
-//			getitem Lesser_Agimat,5;
+		else
+			getitem Lesser_Agimat,5;
 		close;
 	} else if (malaya_bakona2 == 15) {
 		mes "[Village Chief]";
@@ -6175,10 +6173,10 @@ malaya,289,364,4	script	Young Fortune Teller	4_F_MALAYA,{
 			erasequest 1186;
 			setquest 1187;
 			malaya_bakona2 = 8;
-//			if (IsPremiumPcCafe == 10)
+			if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 				getitem Tikbalang_Belt,7;
-//			else
-//				getitem Tikbalang_Belt,5;
+			else
+				getitem Tikbalang_Belt,5;
 			close;
 		} else {
 			mes "[Young Fortune Teller]";
@@ -6792,13 +6790,13 @@ L_Warp:
 	}
 
 L_Reward:
-//	if (IsPremiumPcCafe == 10) {
+	if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1)) {
 		getitem Ancient_Grudge,5;
 		getitem Lesser_Agimat,10;
-//	} else {
-//		getitem Ancient_Grudge,3;
-//		getitem Lesser_Agimat,5;
-//	}
+	} else {
+		getitem Ancient_Grudge,3;
+		getitem Lesser_Agimat,5;
+	}
 	getitem Old_Violet_Box,1;
 	getexp 1000000,0;
 	return;

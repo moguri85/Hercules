@@ -33,7 +33,7 @@
 //================= Description ===========================================
 //= Job change Quest from Dancer / Gypsy -> Wanderer.
 //================= Current Version =======================================
-//= 1.4
+//= 1.5
 //=========================================================================
 
 xmas,162,209,5	script	Aspiring Wanderer, Soy	4_F_06,{
@@ -284,6 +284,12 @@ xmas,132,143,5	script	Performance Manager#wnd	4_M_06,{
 			mes "You are so cold-hearted....";
 			close;
 		}
+		if (getserverdef(VAR_VIP_SCRIPT)) {
+			callfunc "VIP_Third_Class";
+			set job_wan,2;
+			setquest 2218;
+			next;
+		}		
 		mes "[Performance Manager]";
 		mes "I would grab them by their collars if I could!";
 		mes "I would tell them Why are you spoiling the performance? but for now, dealing with the angry sponsors is hard enough... Oh, no!";

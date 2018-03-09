@@ -32,7 +32,7 @@
 //================= Description ===========================================
 //= Job change Quest from Knight / Lord Knight -> Rune Knight.
 //================= Current Version =======================================
-//= 1.5
+//= 1.6
 //=========================================================================
 
 prt_in,162,24,3	script	Splendid-Looking Knight	4_M_KNIGHT_SILVER,2,2,{
@@ -94,6 +94,12 @@ prt_in,162,24,3	script	Splendid-Looking Knight	4_M_KNIGHT_SILVER,2,2,{
 					mes "Of course, I would only accept you if you are one hundred percent sure of your conviction to become a Rune Knight.";
 					close;
 				case 2:
+					if (getserverdef(VAR_VIP_SCRIPT)) {
+						callfunc "VIP_Third_Class";
+						set job_rune_edq,1;
+						setquest 3200;
+						next;
+					}				
 					mes "[Rune Knight Manuel]";
 					mes "You're sure now?";
 					mes "Let me send a dispatch to my comrades that you are willing to join our ranks.";

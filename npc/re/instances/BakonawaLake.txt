@@ -30,7 +30,7 @@
 //= Defeat Bakonawa before he eats the moon.
 //= Part of the "Bakonawa Extermination" quest.
 //================= Current Version =======================================
-//= 1.1
+//= 1.2
 //=========================================================================
 
 ma_scene01,174,179,4	script	Taho	4_M_DEWZATIMAN,{
@@ -539,10 +539,10 @@ OnMobSpawn:
 		erasequest(12279);
 		mes("[Taho]");
 		mes("This was found from Bakonawa's corpse. It would be better if you take this.");
-//		if (IsPremiumPcCafe == 10)
+		if (!getserverdef(VAR_VIP_SCRIPT) || vip_status(1))
 			getitem(Ancient_Grudge, 7);
-//		else
-//			getitem(Ancient_Grudge, 5);
+		else
+			getitem(Ancient_Grudge, 5);
 		getexp(0, 100000);
 		next();
 	}

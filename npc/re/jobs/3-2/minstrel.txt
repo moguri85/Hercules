@@ -32,7 +32,7 @@
 //================= Description ===========================================
 //= Job change Quest from Bard / Clown -> Minstrel.
 //================= Current Version =======================================
-//= 1.3
+//= 1.4
 //=========================================================================
 
 alberta,196,133,4	script	Bard#job_min	4_M_BARD,{
@@ -135,6 +135,12 @@ alberta,196,133,4	script	Bard#job_min	4_M_BARD,{
 				mes "See you later~";
 				close;
 			}
+			if (getserverdef(VAR_VIP_SCRIPT)) {
+				callfunc "VIP_Third_Class";
+				set job_min,1;
+				setquest 11135;
+				next;
+			}			
 			mes "["+strcharinfo(PC_NAME)+"]";
 			mes "Ok, I will.";
 			job_min = 1;

@@ -23964,12 +23964,35 @@ BUILDIN(clan_master)
 	return true;
 }
 
-#ifdef VIP_ENABLE
+BUILDIN_FUNC(getserverdef) {
+	int type = script_getnum(st,2);
+	switch(type){
+		case 0: script_pushint(st,PACKETVER); break;
+		case 1: script_pushint(st,MAX_LEVEL); break;
+		case 2: script_pushint(st,MAX_STORAGE); break;
+		case 3: script_pushint(st,MAX_INVENTORY); break;
+		case 4: script_pushint(st,MAX_ZENY); break;
+		case 5: script_pushint(st,MAX_PARTY); break;
+		case 6: script_pushint(st,MAX_GUILD); break;
+		case 7: script_pushint(st,MAX_GUILDLEVEL); break;
+		case 8: script_pushint(st,MAX_GUILD_STORAGE); break;
+		case 9: script_pushint(st,MAX_BG_MEMBERS); break;
+		case 10: script_pushint(st,VIP_SCRIPT); break;
+		case 11: script_pushint(st,MIN_STORAGE); break;
+		default:
+			ShowWarning("buildin_getserverdef: unknown type %d.\n", type);
+			script_pushint(st,0);
+			break;
+	}
+	return 0;
+}
+
 /* Returns various information about a player's VIP status.
  * vip_status <type>,{"<character name>"};
  * Note: VIP System needs to be enabled.
  */
 BUILDIN(vip_status) {
+#ifdef VIP_ENABLE
 	TBL_PC *sd;
 	char *vip_str = (char *)aMalloc(24*sizeof(char));
 	time_t now = time(NULL);
@@ -23984,10 +24007,10 @@ BUILDIN(vip_status) {
 		return 0;
 
 	switch(type) {
-		case 0: // Get VIP status.
+		case 1: // Get VIP status.
 			script_pushint(st, pc_isvip(sd));
 			break;
-		case 1: // Get VIP expire date.
+		case 2: // Get VIP expire date.
 			if (pc_isvip(sd)) {
 				time_t viptime = (time_t)sd->vip.time;
 				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime));
@@ -23996,7 +24019,7 @@ BUILDIN(vip_status) {
 			} else
 				script_pushint(st, 0);
 			break;
-		case 2: // Get remaining time.
+		case 3: // Get remaining time.
 			if (pc_isvip(sd)) {
 				time_t viptime = (time_t)sd->vip.time;
 				strftime(vip_str, 24, "%Y-%m-%d %H:%M", localtime(&viptime - now));
@@ -24006,9 +24029,12 @@ BUILDIN(vip_status) {
 				script_pushint(st, 0);
 			break;
 	}
+#else
+	script_pushint(st, 0);
+#endif
 	return 0;
 }
-
+#ifdef VIP_ENABLE
 /* Adds or removes VIP time in minutes.
  * vip_time <time>,{"<character name>"};
  * If time < 0 remove time, else add time.
@@ -24740,8 +24766,9 @@ void script_parse_builtin(void) {
 		BUILDIN_DEF(mergeitem,""),
 		BUILDIN_DEF(getcalendartime, "ii??"),
 
-#ifdef VIP_ENABLE
+		BUILDIN_DEF(getserverdef,"i"),
 		BUILDIN_DEF(vip_status, "i?"),
+#ifdef VIP_ENABLE
 		BUILDIN_DEF(vip_time, "i?"),
 #endif
 

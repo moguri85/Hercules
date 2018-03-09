@@ -48,7 +48,7 @@
 //= These functions handle save, storage, cart rental, teleport, and Free
 //= Teleport/Warp/Rent Cart options for all Kafra NPCs.
 //================= Current Version =======================================
-//= 6.9
+//= 7.0
 //=========================================================================
 
 //== Main Function =========================================
@@ -672,6 +672,13 @@ function	script	F_KafSet	{
 		setarray @wrpD$, "Rachel";
 		setarray @wrpP, 2200;
 	}
+
+	// VIP pricing varies across the regional servers; this is most practical.
+	if (getserverdef(VAR_VIP_SCRIPT) && !vip_status(1)) {
+		for (set .@i, 0; .@i < getarraysize(@wrpD$); set .@i, .@i + 1)
+			setd "@wrpP["+.@i+"]",getd("@wrpP["+.@i+"]") * 2;
+	}
+
 	for (.@i = 0; .@i < getarraysize(@wrpD$); ++.@i)
 		@wrpC$[.@i] = @wrpD$[.@i]+" -> "+@wrpP[.@i];
 	@wrpC$[getarraysize(@wrpC$)] = "Cancel";
